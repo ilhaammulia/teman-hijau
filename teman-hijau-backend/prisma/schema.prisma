@@ -1,0 +1,196 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Role {
+  id         String   @id @db.VarChar(10)
+  name       String   @db.VarChar(100)
+  is_staff   Boolean  @default(false) @db.Boolean
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  authentications Authentication[]
+
+  @@map("roles")
+}
+
+model Authentication {
+  username      String   @id @db.VarChar(20)
+  password      String   @db.VarChar(100)
+  role_id       String   @db.VarChar(10)
+  refresh_token String?  @db.Text
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  role Role @relation(fields: [role_id], references: [id])
+
+  @@map("authentications")
+}
+
+model User {
+  username      String   @id @db.VarChar(20)
+  first_name    String   @db.VarChar(100)
+  last_name     String   @db.VarChar(100)
+  email         String   @db.VarChar(100)
+  address       String?  @db.Text
+  phone         String?  @db.VarChar(20)
+  profile_photo String?  @db.Text
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  user_withdrawals UserWithdrawal[]
+  UserTransaction  UserTransaction[]
+
+  @@map("users")
+}
+
+model Wallet {
+  username   String   @id @db.VarChar(20)
+  balance    Decimal  @default(0) @db.Money
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@map("wallets")
+}
+
+model UserWithdrawal {
+  id         String   @id @db.VarChar(100)
+  user_id    String   @db.VarChar(20)
+  amount     Decimal  @default(0) @db.Money
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  user User @relation(fields: [user_id], references: [username])
+
+  @@map("user_withdrawals")
+}
+
+model UserTransaction {
+  id              String   @id @db.VarChar(100)
+  garbage_id      Int      @db.Integer
+  user_id         String   @db.VarChar(20)
+  organization_id Int      @db.Integer
+  qty             Decimal  @default(0) @db.Decimal()
+  total_price     Decimal  @default(0) @db.Money
+  status          Status   @default(PENDING)
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  garbage      Garbage      @relation(fields: [garbage_id], references: [id])
+  user         User         @relation(fields: [user_id], references: [username])
+  organization Organization @relation(fields: [organization_id], references: [id])
+
+  @@map("user_transactions")
+}
+
+model Organization {
+  id                   Int                    @id @default(autoincrement())
+  name                 String                 @db.VarChar(100)
+  address              String                 @db.Text
+  balance              Decimal                @default(0) @db.Money
+  created_at           DateTime               @default(now())
+  updated_at           DateTime               @updatedAt
+  Cashout              Cashout[]
+  UserTransaction      UserTransaction[]
+  CollectorTransaction CollectorTransaction[]
+
+  @@map("organizations")
+}
+
+model Cashout {
+  id              String   @id @db.VarChar(100)
+  organization_id Int      @db.Integer
+  description     String   @db.Text
+  amount          Decimal  @db.Money
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organization_id], references: [id])
+
+  @@map("cashouts")
+}
+
+model Category {
+  id         Int      @id @default(autoincrement())
+  name       String   @db.VarChar(100)
+  icon       String?  @db.Text
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  garbage_types GarbageType[]
+
+  @@map("categories")
+}
+
+model GarbageType {
+  id          Int      @id @default(autoincrement())
+  name        String   @db.VarChar(100)
+  category_id Int      @db.Integer
+  unit        String?  @db.VarChar(100)
+  buy_price   Decimal  @default(0) @db.Money
+  sell_price  Decimal  @default(0) @db.Money
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  category Category  @relation(fields: [category_id], references: [id])
+  garbages Garbage[]
+
+  @@map("garbage_types")
+}
+
+model Garbage {
+  id              Int      @id @default(autoincrement())
+  garbage_type_id Int      @db.Integer
+  stock           Decimal  @db.Decimal()
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  garbage_type         GarbageType            @relation(fields: [garbage_type_id], references: [id])
+  UserTransaction      UserTransaction[]
+  CollectorTransaction CollectorTransaction[]
+
+  @@map("garbages")
+}
+
+model Collector {
+  id                   Int                    @id @default(autoincrement())
+  name                 String                 @db.VarChar(100)
+  address              String                 @db.Text
+  created_at           DateTime               @default(now())
+  updated_at           DateTime               @updatedAt
+  CollectorTransaction CollectorTransaction[]
+
+  @@map("collectors")
+}
+
+model CollectorTransaction {
+  id              String   @id @db.VarChar(100)
+  garbage_id      Int      @db.Integer
+  collector_id    Int      @db.Integer
+  organization_id Int      @db.Integer
+  qty             Decimal  @default(0) @db.Decimal()
+  total_price     Decimal  @default(0) @db.Money
+  status          Status   @default(PENDING)
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  garbage      Garbage      @relation(fields: [garbage_id], references: [id])
+  collector    Collector    @relation(fields: [collector_id], references: [id])
+  organization Organization @relation(fields: [organization_id], references: [id])
+
+  @@map("collector_transactions")
+}
+
+enum Status {
+  ACCEPTED
+  REJECTED
+  PENDING
+}
