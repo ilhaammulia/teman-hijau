@@ -7,6 +7,8 @@ const registerUserValidation = Joi.object({
   first_name: Joi.string().max(100).required(),
   last_name: Joi.string().max(100).required(),
   email: Joi.string().max(100).required(),
+}).options({
+  allowUnknown: false,
 });
 
-export { registerUserValidation };
+export default { registerUserValidation };
