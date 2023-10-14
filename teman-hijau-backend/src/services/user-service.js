@@ -1,8 +1,12 @@
 import { prismaClient } from "../applications/database.js";
 import { ResponseError } from "../exceptions/response-error.js";
 import { validate } from "../validations/validate.js";
-import { registerUserValidation } from "../validations/user-validation.js";
+import {
+  registerUserValidation,
+  loginUserValidation,
+} from "../validations/user-validation.js";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
 const register = async (request) => {
   const user = validate(registerUserValidation, request);
@@ -48,6 +52,46 @@ const register = async (request) => {
   });
 };
 
+const login = async (request) => {
+  const loginUser = validate(loginUserValidation, request);
+
+  const user = await prismaClient.authentication.findUnique({
+    where: {
+      username: loginUser.username,
+    },
+  });
+
+  const isPasswordMatched = await bcrypt.compare(
+    loginUser.password,
+    user.password
+  );
+
+  if (!user || !isPasswordMatched) {
+    throw new ResponseError(401, "Username atau Password salah.");
+  }
+
+  const accessToken = jwt.sign({ user }, process.env.ACCESS_TOKEN_SECRET, {
+    expiresIn: "30s",
+  });
+
+  const refreshToken = jwt.sign({ user }, process.env.REFRESH_TOKEN_SECRET, {
+    expiresIn: "1d",
+  });
+
+  const updatedUser = await prismaClient.authentication.update({
+    where: { username: user.username },
+    data: { refresh_token: refreshToken },
+    select: {
+      username: true,
+      role_id: true,
+      refresh_token: true,
+    },
+  });
+
+  return { ...updatedUser, access_token: accessToken };
+};
+
 export default {
   register,
+  login,
 };
