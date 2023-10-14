@@ -11,4 +11,11 @@ const registerUserValidation = Joi.object({
   allowUnknown: false,
 });
 
-export default { registerUserValidation };
+const loginUserValidation = Joi.object({
+  username: Joi.string().max(20).required(),
+  password: Joi.string().max(100).required(),
+}).options({
+  allowUnknown: false,
+});
+
+export { registerUserValidation, loginUserValidation };
