@@ -11,6 +11,18 @@ const register = async (req, res, next) => {
   }
 };
 
-export default {
-  register,
+const login = async (req, res, next) => {
+  try {
+    const result = await userService.login(req.body);
+    res.cookie("refresh_token", result.refresh_token, {
+      httpOnly: true,
+      maxAge: 24 * 60 * 60 * 1000,
+    });
+    delete result.refresh_token;
+    res.status(200).json({ data: result });
+  } catch (error) {
+    next(error);
+  }
 };
+
+export default { register, login };
