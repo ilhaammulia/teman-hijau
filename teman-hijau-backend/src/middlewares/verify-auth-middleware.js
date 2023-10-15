@@ -25,8 +25,8 @@ export const verifyAuthMiddleware = async (req, res, next) => {
   }
   try {
     const token = authorization.split(" ")[1];
-    const user = await verifyAuth(token, process.env.ACCESS_TOKEN_SECRET);
-    req.user = user;
+    const decoded = await verifyAuth(token, process.env.ACCESS_TOKEN_SECRET);
+    req.user = decoded.user;
     next();
     return;
   } catch (error) {
