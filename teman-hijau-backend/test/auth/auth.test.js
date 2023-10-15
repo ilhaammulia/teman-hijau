@@ -1,8 +1,16 @@
 import supertest from "supertest";
 import { web } from "../../src/applications/web.js";
 import { prismaClient } from "../../src/applications/database.js";
+import { logger } from "../../src/applications/logging.js";
 
 describe("POST /api/users", () => {
+  beforeAll(() => {
+    logger.silent = true;
+  });
+  afterAll(() => {
+    logger.silent = false;
+  });
+
   afterEach(async () => {
     await prismaClient.user.deleteMany({
       where: {
@@ -64,6 +72,13 @@ describe("POST /api/users", () => {
 });
 
 describe("POST /api/users/login", () => {
+  beforeAll(() => {
+    logger.silent = true;
+  });
+  afterAll(() => {
+    logger.silent = false;
+  });
+
   beforeEach(async () => {
     await supertest(web).post("/api/users").send({
       username: "ilham",
