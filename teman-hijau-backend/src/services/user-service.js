@@ -91,7 +91,16 @@ const login = async (request) => {
   return { ...updatedUser, access_token: accessToken };
 };
 
+const fetch = async (user) => {
+  return prismaClient.user.findUnique({
+    where: {
+      username: user.username,
+    },
+  });
+};
+
 export default {
   register,
   login,
+  fetch,
 };
