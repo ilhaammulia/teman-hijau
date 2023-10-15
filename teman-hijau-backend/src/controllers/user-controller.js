@@ -25,4 +25,17 @@ const login = async (req, res, next) => {
   }
 };
 
-export default { register, login };
+const fetch = async (req, res, next) => {
+  try {
+    const user = req.user;
+    const profile = await userService.fetch(user);
+    user.profile = profile;
+    res.status(200).json({
+      data: user,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export default { register, login, fetch };
