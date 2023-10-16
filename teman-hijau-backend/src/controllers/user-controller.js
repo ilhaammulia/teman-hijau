@@ -38,4 +38,15 @@ const fetch = async (req, res, next) => {
   }
 };
 
-export default { register, login, fetch };
+const wallet = async (req, res, next) => {
+  try {
+    const walletDetails = await userService.wallet(req.user);
+    res.status(200).json({
+      data: walletDetails,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export default { register, login, fetch, wallet };
