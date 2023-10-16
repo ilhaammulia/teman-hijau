@@ -18,4 +18,12 @@ const loginUserValidation = Joi.object({
   allowUnknown: false,
 });
 
-export { registerUserValidation, loginUserValidation };
+const withdrawalUserValidation = Joi.object({
+  amount: Joi.number().required(),
+});
+
+export {
+  registerUserValidation,
+  loginUserValidation,
+  withdrawalUserValidation,
+};
