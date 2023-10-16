@@ -58,4 +58,20 @@ const withdrawal = async (req, res, next) => {
   }
 };
 
-export default { register, login, fetch, wallet, withdrawal };
+const requestWithdrawal = async (req, res, next) => {
+  try {
+    const withdraw = await userService.requestWithdrawal(req.user, req.body);
+    res.status(200).json({ data: withdraw });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export default {
+  register,
+  login,
+  fetch,
+  wallet,
+  withdrawal,
+  requestWithdrawal,
+};
