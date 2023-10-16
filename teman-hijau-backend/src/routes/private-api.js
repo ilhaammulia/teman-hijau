@@ -6,5 +6,6 @@ const privateRouter = new express.Router();
 privateRouter.use(verifyAuthMiddleware);
 
 privateRouter.get("/api/users", userController.fetch);
+privateRouter.get("/api/users/wallet", userController.wallet);
 
 export { privateRouter };
