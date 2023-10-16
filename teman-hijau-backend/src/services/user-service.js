@@ -4,9 +4,11 @@ import { validate } from "../validations/validate.js";
 import {
   registerUserValidation,
   loginUserValidation,
+  withdrawalUserValidation,
 } from "../validations/user-validation.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { generateRandomId } from "../utils/generate-random.js";
 
 const register = async (request) => {
   const user = validate(registerUserValidation, request);
@@ -114,10 +116,37 @@ const withdrawal = async (user) => {
   });
 };
 
+const requestWithdrawal = async (user, request) => {
+  const data = validate(withdrawalUserValidation, request);
+  const id = generateRandomId("WD");
+
+  const wallet = await prismaClient.wallet.findUnique({
+    where: { username: user.username },
+  });
+
+  if (wallet.balance < data.amount) {
+    throw new ResponseError(400, "Saldo anda tidak mencukupi.");
+  }
+
+  return prismaClient.userWithdrawal.create({
+    data: {
+      id: id,
+      user_id: user.username,
+      amount: data.amount,
+    },
+    select: {
+      user_id: true,
+      amount: true,
+      created_at: true,
+    },
+  });
+};
+
 export default {
   register,
   login,
   fetch,
   wallet,
   withdrawal,
+  requestWithdrawal,
 };
