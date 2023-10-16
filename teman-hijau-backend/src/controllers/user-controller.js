@@ -49,4 +49,13 @@ const wallet = async (req, res, next) => {
   }
 };
 
-export default { register, login, fetch, wallet };
+const withdrawal = async (req, res, next) => {
+  try {
+    const userWithdrawal = await userService.withdrawal(req.user);
+    res.status(200).json({ data: userWithdrawal });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export default { register, login, fetch, wallet, withdrawal };
