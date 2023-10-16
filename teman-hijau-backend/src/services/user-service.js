@@ -99,8 +99,17 @@ const fetch = async (user) => {
   });
 };
 
+const wallet = async (user) => {
+  return prismaClient.wallet.findUnique({
+    where: {
+      username: user.username,
+    },
+  });
+};
+
 export default {
   register,
   login,
   fetch,
+  wallet,
 };
