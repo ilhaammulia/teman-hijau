@@ -7,5 +7,6 @@ privateRouter.use(verifyAuthMiddleware);
 
 privateRouter.get("/api/users", userController.fetch);
 privateRouter.get("/api/users/wallet", userController.wallet);
+privateRouter.get("/api/users/withdrawals", userController.withdrawal);
 
 export { privateRouter };
