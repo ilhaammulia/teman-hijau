@@ -107,9 +107,17 @@ const wallet = async (user) => {
   });
 };
 
+const withdrawal = async (user) => {
+  return prismaClient.userWithdrawal.findMany({
+    where: { user_id: user.username },
+    orderBy: { created_at: "desc" },
+  });
+};
+
 export default {
   register,
   login,
   fetch,
   wallet,
+  withdrawal,
 };
