@@ -125,37 +125,25 @@ model Category {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  garbage_types GarbageType[]
+  garbages Garbage[]
 
   @@map("categories")
 }
 
-model GarbageType {
+model Garbage {
   id          Int      @id @default(autoincrement())
   name        String   @db.VarChar(100)
   category_id Int      @db.Integer
   unit        String?  @db.VarChar(100)
   buy_price   Decimal  @default(0) @db.Money
   sell_price  Decimal  @default(0) @db.Money
+  stock       Decimal  @default(0) @db.Decimal()
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
 
-  category Category  @relation(fields: [category_id], references: [id])
-  garbages Garbage[]
-
-  @@map("garbage_types")
-}
-
-model Garbage {
-  id              Int      @id @default(autoincrement())
-  garbage_type_id Int      @db.Integer
-  stock           Decimal  @db.Decimal()
-  created_at      DateTime @default(now())
-  updated_at      DateTime @updatedAt
-
-  garbage_type         GarbageType            @relation(fields: [garbage_type_id], references: [id])
-  UserTransaction      UserTransaction[]
-  CollectorTransaction CollectorTransaction[]
+  category               Category               @relation(fields: [category_id], references: [id])
+  user_transactions      UserTransaction[]
+  collector_transactions CollectorTransaction[]
 
   @@map("garbages")
 }
