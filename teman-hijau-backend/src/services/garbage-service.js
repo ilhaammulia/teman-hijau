@@ -1,6 +1,10 @@
 import { prismaClient } from "../applications/database.js";
 import { validate } from "../validations/validate.js";
-import { createCategoryValidation } from "../validations/garbage-validation.js";
+import {
+  createCategoryValidation,
+  createGarbageValidation,
+} from "../validations/garbage-validation.js";
+import { ResponseError } from "../exceptions/response-error.js";
 
 const createCategory = async (request) => {
   const category = validate(createCategoryValidation, request);
@@ -19,4 +23,73 @@ const categories = async () => {
   return prismaClient.category.findMany();
 };
 
-export default { createCategory, categories };
+const createGarbage = async (request) => {
+  const garbage = validate(createGarbageValidation, request);
+  return prismaClient.garbage.create({
+    data: garbage,
+    select: {
+      name: true,
+      unit: true,
+      buy_price: true,
+      sell_price: true,
+      stock: true,
+      created_at: true,
+      category: true,
+    },
+  });
+};
+
+const garbages = async () => {
+  return prismaClient.garbage.findMany({
+    orderBy: {
+      updated_at: "desc",
+    },
+  });
+};
+
+const updateGarbage = async (garbageId, request) => {
+  const data = validate(createGarbageValidation, request);
+  const garbage = await prismaClient.garbage.findUnique({
+    where: { id: garbageId },
+  });
+  if (!garbage) {
+    throw new ResponseError(404, "Sampah tidak ditemukan.");
+  }
+
+  return prismaClient.garbage.update({
+    where: { id: garbage.id },
+    data: data,
+    select: {
+      name: true,
+      unit: true,
+      buy_price: true,
+      sell_price: true,
+      stock: true,
+      created_at: true,
+      category: true,
+    },
+  });
+};
+
+const deleteGarbage = async (garbageId) => {
+  const garbage = await prismaClient.garbage.findUnique({
+    where: { id: garbageId },
+  });
+
+  if (!garbage) throw new ResponseError(404, "Sampah tidak ditemukan.");
+  return prismaClient.garbage.delete({
+    where: { id: garbage.id },
+    select: {
+      name: true,
+    },
+  });
+};
+
+export default {
+  createCategory,
+  categories,
+  createGarbage,
+  garbages,
+  updateGarbage,
+  deleteGarbage,
+};
