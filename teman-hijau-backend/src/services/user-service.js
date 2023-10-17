@@ -61,6 +61,9 @@ const login = async (request) => {
     where: {
       username: loginUser.username,
     },
+    include: {
+      role: true,
+    },
   });
 
   const isPasswordMatched = await bcrypt.compare(
@@ -71,7 +74,6 @@ const login = async (request) => {
   if (!user || !isPasswordMatched) {
     throw new ResponseError(401, "Username atau Password salah.");
   }
-
   const accessToken = jwt.sign({ user }, process.env.ACCESS_TOKEN_SECRET, {
     expiresIn: "30s",
   });
