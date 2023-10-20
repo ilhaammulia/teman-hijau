@@ -13,6 +13,7 @@ privateRouter.get("/api/users/withdrawals", userController.withdrawal);
 privateRouter.post("/api/users/withdrawals", userController.requestWithdrawal);
 
 privateRouter.use("/api/garbages", staffOnlyMiddleware);
+
 privateRouter.post("/api/garbages", garbageController.createGarbage);
 privateRouter.get("/api/garbages", garbageController.garbages);
 privateRouter.put("/api/garbages/:id", garbageController.updateGarbage);
@@ -23,4 +24,8 @@ privateRouter.post(
   garbageController.createCategory
 );
 privateRouter.get("/api/garbages/categories", garbageController.categories);
+privateRouter.put(
+  "/api/garbages/categories/:id",
+  garbageController.updateCategory
+);
 export { privateRouter };
