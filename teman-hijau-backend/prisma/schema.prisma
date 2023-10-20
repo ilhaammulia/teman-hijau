@@ -75,7 +75,7 @@ model UserWithdrawal {
 
 model UserTransaction {
   id              String   @id @db.VarChar(100)
-  garbage_id      Int      @db.Integer
+  garbage_id      Int?     @db.Integer
   user_id         String   @db.VarChar(20)
   organization_id Int      @db.Integer
   qty             Decimal  @default(0) @db.Decimal()
@@ -84,7 +84,7 @@ model UserTransaction {
   created_at      DateTime @default(now())
   updated_at      DateTime @updatedAt
 
-  garbage      Garbage      @relation(fields: [garbage_id], references: [id])
+  garbage      Garbage?     @relation(fields: [garbage_id], references: [id], onDelete: SetNull)
   user         User         @relation(fields: [user_id], references: [username])
   organization Organization @relation(fields: [organization_id], references: [id])
 
@@ -133,7 +133,7 @@ model Category {
 model Garbage {
   id          Int      @id @default(autoincrement())
   name        String   @db.VarChar(100)
-  category_id Int      @db.Integer
+  category_id Int?     @db.Integer
   unit        String?  @db.VarChar(100)
   buy_price   Decimal  @default(0) @db.Money
   sell_price  Decimal  @default(0) @db.Money
@@ -141,7 +141,7 @@ model Garbage {
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
 
-  category               Category               @relation(fields: [category_id], references: [id])
+  category               Category?              @relation(fields: [category_id], references: [id], onDelete: SetNull)
   user_transactions      UserTransaction[]
   collector_transactions CollectorTransaction[]
 
@@ -161,8 +161,8 @@ model Collector {
 
 model CollectorTransaction {
   id              String   @id @db.VarChar(100)
-  garbage_id      Int      @db.Integer
-  collector_id    Int      @db.Integer
+  garbage_id      Int?     @db.Integer
+  collector_id    Int?     @db.Integer
   organization_id Int      @db.Integer
   qty             Decimal  @default(0) @db.Decimal()
   total_price     Decimal  @default(0) @db.Money
@@ -170,8 +170,8 @@ model CollectorTransaction {
   created_at      DateTime @default(now())
   updated_at      DateTime @updatedAt
 
-  garbage      Garbage      @relation(fields: [garbage_id], references: [id])
-  collector    Collector    @relation(fields: [collector_id], references: [id])
+  garbage      Garbage?     @relation(fields: [garbage_id], references: [id], onDelete: SetNull)
+  collector    Collector?   @relation(fields: [collector_id], references: [id], onDelete: SetNull)
   organization Organization @relation(fields: [organization_id], references: [id])
 
   @@map("collector_transactions")
