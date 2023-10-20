@@ -44,6 +44,20 @@ const updateCategory = async (categoryId, request) => {
   });
 };
 
+const deleteCategory = async (categoryId) => {
+  const category = await prismaClient.category.findUnique({
+    where: { id: categoryId },
+  });
+
+  if (!category) throw new ResponseError(404, "Kategori tidak ditemukan.");
+  return prismaClient.category.delete({
+    where: { id: category.id },
+    select: {
+      name: true,
+    },
+  });
+};
+
 const createGarbage = async (request) => {
   const garbage = validate(createGarbageValidation, request);
   return prismaClient.garbage.create({
@@ -110,6 +124,7 @@ export default {
   createCategory,
   categories,
   updateCategory,
+  deleteCategory,
   createGarbage,
   garbages,
   updateGarbage,

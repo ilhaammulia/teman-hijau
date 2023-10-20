@@ -32,6 +32,17 @@ const updateCategory = async (req, res, next) => {
   }
 };
 
+const deleteCategory = async (req, res, next) => {
+  try {
+    const categoryId = Number(req.params.id);
+    if (!categoryId) throw new ResponseError(400, "Masukan ID kategori.");
+    const category = await garbageService.deleteCategory(categoryId);
+    res.status(200).json({ data: category });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const createGarbage = async (req, res, next) => {
   try {
     const garbage = await garbageService.createGarbage(req.body);
@@ -78,6 +89,7 @@ export default {
   createCategory,
   categories,
   updateCategory,
+  deleteCategory,
   createGarbage,
   garbages,
   updateGarbage,

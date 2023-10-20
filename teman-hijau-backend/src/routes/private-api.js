@@ -28,4 +28,8 @@ privateRouter.put(
   "/api/garbages/categories/:id",
   garbageController.updateCategory
 );
+privateRouter.delete(
+  "/api/garbages/categories/:id",
+  garbageController.deleteCategory
+);
 export { privateRouter };
