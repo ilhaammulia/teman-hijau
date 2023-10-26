@@ -53,4 +53,8 @@ const CreateAdmin = async () => {
   });
 };
 
-Promise.all([await Roles(), await Organization(), await CreateAdmin()]);
+if (process.argv.includes("--create-admin")) {
+  Promise.all([await Roles(), await Organization(), await CreateAdmin()]);
+} else {
+  Promise.all([await Roles(), await Organization()]);
+}
