@@ -36,23 +36,11 @@ describe("POST /api/garbages", () => {
   });
 
   afterEach(async () => {
-    await prismaClient.user.deleteMany({
-      where: {
-        OR: [{ username: "ilham" }, { username: "user" }],
-      },
-    });
+    await prismaClient.user.deleteMany();
 
-    await prismaClient.authentication.deleteMany({
-      where: {
-        OR: [{ username: "ilham" }, { username: "user" }],
-      },
-    });
+    await prismaClient.authentication.deleteMany();
 
-    await prismaClient.wallet.deleteMany({
-      where: {
-        OR: [{ username: "ilham" }, { username: "user" }],
-      },
-    });
+    await prismaClient.wallet.deleteMany();
 
     await prismaClient.garbage.deleteMany();
     await prismaClient.category.deleteMany();
@@ -189,23 +177,11 @@ describe("GET /api/garbages", () => {
   });
 
   afterEach(async () => {
-    await prismaClient.user.deleteMany({
-      where: {
-        OR: [{ username: "ilham" }, { username: "user" }],
-      },
-    });
+    await prismaClient.user.deleteMany();
 
-    await prismaClient.authentication.deleteMany({
-      where: {
-        OR: [{ username: "ilham" }, { username: "user" }],
-      },
-    });
+    await prismaClient.authentication.deleteMany();
 
-    await prismaClient.wallet.deleteMany({
-      where: {
-        OR: [{ username: "ilham" }, { username: "user" }],
-      },
-    });
+    await prismaClient.wallet.deleteMany();
 
     await prismaClient.garbage.deleteMany();
     await prismaClient.category.deleteMany();
@@ -273,23 +249,11 @@ describe("PUT /api/garbages/:id", () => {
   });
 
   afterEach(async () => {
-    await prismaClient.user.deleteMany({
-      where: {
-        OR: [{ username: "ilham" }, { username: "user" }],
-      },
-    });
+    await prismaClient.user.deleteMany();
 
-    await prismaClient.authentication.deleteMany({
-      where: {
-        OR: [{ username: "ilham" }, { username: "user" }],
-      },
-    });
+    await prismaClient.authentication.deleteMany();
 
-    await prismaClient.wallet.deleteMany({
-      where: {
-        OR: [{ username: "ilham" }, { username: "user" }],
-      },
-    });
+    await prismaClient.wallet.deleteMany();
 
     await prismaClient.garbage.deleteMany();
     await prismaClient.category.deleteMany();
@@ -475,23 +439,11 @@ describe("DELETE /api/garbages/:id", () => {
   });
 
   afterEach(async () => {
-    await prismaClient.user.deleteMany({
-      where: {
-        OR: [{ username: "ilham" }, { username: "user" }],
-      },
-    });
+    await prismaClient.user.deleteMany();
 
-    await prismaClient.authentication.deleteMany({
-      where: {
-        OR: [{ username: "ilham" }, { username: "user" }],
-      },
-    });
+    await prismaClient.authentication.deleteMany();
 
-    await prismaClient.wallet.deleteMany({
-      where: {
-        OR: [{ username: "ilham" }, { username: "user" }],
-      },
-    });
+    await prismaClient.wallet.deleteMany();
 
     await prismaClient.garbage.deleteMany();
     await prismaClient.category.deleteMany();
