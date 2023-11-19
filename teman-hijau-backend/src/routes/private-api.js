@@ -3,6 +3,7 @@ import { verifyAuthMiddleware } from "../middlewares/verify-auth-middleware.js";
 import { staffOnlyMiddleware } from "../middlewares/staff-only-middleware.js";
 import userController from "../controllers/user-controller.js";
 import garbageController from "../controllers/garbage-controller.js";
+import collectorController from "../controllers/collector-controller.js";
 
 const privateRouter = new express.Router();
 privateRouter.use(verifyAuthMiddleware);
@@ -32,4 +33,15 @@ privateRouter.delete(
   "/api/garbages/categories/:id",
   garbageController.deleteCategory
 );
+
+privateRouter.use("/api/collectors", staffOnlyMiddleware);
+
+privateRouter.post("/api/collectors", collectorController.createCollector);
+privateRouter.get("/api/collectors", collectorController.collectors);
+privateRouter.put("/api/collectors/:id", collectorController.updateCollector);
+privateRouter.delete(
+  "/api/collectors/:id",
+  collectorController.deleteCollector
+);
+
 export { privateRouter };
