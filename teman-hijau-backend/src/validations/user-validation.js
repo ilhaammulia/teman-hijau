@@ -22,8 +22,16 @@ const withdrawalUserValidation = Joi.object({
   amount: Joi.number().required(),
 });
 
+const transactionValidation = Joi.object({
+  garbage_id: Joi.number().required(),
+  user_id: Joi.string().max(20).required(),
+  organization_id: Joi.number().required(),
+  qty: Joi.number().required(),
+});
+
 export {
   registerUserValidation,
   loginUserValidation,
   withdrawalUserValidation,
+  transactionValidation,
 };

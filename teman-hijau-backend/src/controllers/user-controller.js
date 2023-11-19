@@ -67,6 +67,24 @@ const requestWithdrawal = async (req, res, next) => {
   }
 };
 
+const createTransaction = async (req, res, next) => {
+  try {
+    const transaction = await userService.createTransaction(req.user, req.body);
+    res.status(201).json({ data: transaction });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const acceptTransaction = async (req, res, next) => {
+  try {
+    const updated = await userService.acceptTransaction(req.params.id);
+    res.status(200).json({ data: updated });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export default {
   register,
   login,
@@ -74,4 +92,6 @@ export default {
   wallet,
   withdrawal,
   requestWithdrawal,
+  createTransaction,
+  acceptTransaction,
 };

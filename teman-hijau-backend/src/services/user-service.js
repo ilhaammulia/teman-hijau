@@ -5,6 +5,7 @@ import {
   registerUserValidation,
   loginUserValidation,
   withdrawalUserValidation,
+  transactionValidation,
 } from "../validations/user-validation.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -144,6 +145,56 @@ const requestWithdrawal = async (user, request) => {
   });
 };
 
+const createTransaction = async (user, request) => {
+  const data = validate(transactionValidation, request);
+  const id = generateRandomId("INV");
+
+  const garbage = await prismaClient.garbage.findUnique({
+    where: { id: data.garbage_id, deleted_at: null },
+  });
+
+  if (!garbage) throw new ResponseError(404, "Data sampah tidak ditemukan.");
+
+  data.id = id;
+  data.staff_id = user.id;
+  data.total_price = garbage.buy_price * data.qty;
+
+  garbage.stock = garbage.stock + data.qty;
+
+  await prismaClient.garbage.update({
+    data: garbage,
+    where: { id: garbage.id },
+  });
+
+  return prismaClient.userTransaction.create({
+    data: data,
+  });
+};
+
+const acceptTransaction = async (transactionId) => {
+  const transaction = await prismaClient.userTransaction.findUnique({
+    where: { id: transactionId },
+  });
+
+  if (!transaction)
+    throw new ResponseError(404, "Data transaksi tidak ditemukan.");
+
+  const tx = await prismaClient.userTransaction.update({
+    data: {
+      status: "ACCEPTED",
+    },
+    where: { id: transactionId },
+  });
+
+  await prismaClient.wallet.update({
+    data: {
+      balance: { increment: transaction.total_price },
+    },
+  });
+
+  return tx;
+};
+
 export default {
   register,
   login,
@@ -151,4 +202,6 @@ export default {
   wallet,
   withdrawal,
   requestWithdrawal,
+  createTransaction,
+  acceptTransaction,
 };
