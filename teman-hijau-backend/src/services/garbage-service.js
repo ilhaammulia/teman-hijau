@@ -9,12 +9,11 @@ import { ResponseError } from "../exceptions/response-error.js";
 const createCategory = async (request) => {
   const category = validate(createCategoryValidation, request);
   return prismaClient.category.create({
-    data: {
-      name: category.name,
-    },
+    data: category,
     select: {
       id: true,
       name: true,
+      icon: true,
     },
   });
 };
