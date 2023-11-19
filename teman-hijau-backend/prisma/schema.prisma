@@ -49,8 +49,10 @@ model User {
   updated_at    DateTime  @updatedAt
   deleted_at    DateTime?
 
-  user_withdrawals UserWithdrawal[]
-  UserTransaction  UserTransaction[]
+  user_withdrawals     UserWithdrawal[]
+  CollectorTransaction CollectorTransaction[]
+  UserTransaction      UserTransaction[]      @relation(name: "member")
+  WorkerTransaction    UserTransaction[]      @relation(name: "worker")
 
   @@map("users")
 }
@@ -83,6 +85,7 @@ model UserTransaction {
   garbage_id      Int?      @db.Integer
   user_id         String    @db.VarChar(20)
   organization_id Int       @db.Integer
+  staff_id        String?   @db.VarChar(20)
   qty             Decimal   @default(0) @db.Decimal()
   total_price     Decimal   @default(0) @db.Money
   status          Status    @default(PENDING)
@@ -91,7 +94,8 @@ model UserTransaction {
   deleted_at      DateTime?
 
   garbage      Garbage?     @relation(fields: [garbage_id], references: [id], onDelete: SetNull)
-  user         User         @relation(fields: [user_id], references: [username])
+  user         User         @relation(name: "member", fields: [user_id], references: [username])
+  staff        User?        @relation(name: "worker", fields: [staff_id], references: [username])
   organization Organization @relation(fields: [organization_id], references: [id])
 
   @@map("user_transactions")
@@ -177,6 +181,7 @@ model CollectorTransaction {
   garbage_id      Int?      @db.Integer
   collector_id    Int?      @db.Integer
   organization_id Int       @db.Integer
+  staff_id        String?   @db.VarChar(20)
   qty             Decimal   @default(0) @db.Decimal()
   total_price     Decimal   @default(0) @db.Money
   status          Status    @default(PENDING)
@@ -186,6 +191,7 @@ model CollectorTransaction {
 
   garbage      Garbage?     @relation(fields: [garbage_id], references: [id], onDelete: SetNull)
   collector    Collector?   @relation(fields: [collector_id], references: [id], onDelete: SetNull)
+  staff        User?        @relation(fields: [staff_id], references: [username])
   organization Organization @relation(fields: [organization_id], references: [id])
 
   @@map("collector_transactions")
