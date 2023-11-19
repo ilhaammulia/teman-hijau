@@ -1,7 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { logger } from "./logging.js";
 
-const prismaClient = new PrismaClient({
+let prismaClient = new PrismaClient({
   log: [
     {
       emit: "event",
@@ -36,6 +36,22 @@ prismaClient.$on("info", (e) => {
 
 prismaClient.$on("query", (e) => {
   logger.info(e);
+});
+
+prismaClient = prismaClient.$extends({
+  name: "SoftDelete",
+  model: {
+    $allModels: {
+      async delete({ where, select }) {
+        const result = await this.update({
+          data: { deleted_at: new Date() },
+          where,
+          select,
+        });
+        return result;
+      },
+    },
+  },
 });
 
 export { prismaClient };

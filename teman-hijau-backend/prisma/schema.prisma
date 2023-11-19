@@ -11,11 +11,12 @@ datasource db {
 }
 
 model Role {
-  id         String   @id @db.VarChar(10)
-  name       String   @db.VarChar(100)
-  is_staff   Boolean  @default(false) @db.Boolean
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  id         String    @id @db.VarChar(10)
+  name       String    @db.VarChar(100)
+  is_staff   Boolean   @default(false) @db.Boolean
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
 
   authentications Authentication[]
 
@@ -23,12 +24,13 @@ model Role {
 }
 
 model Authentication {
-  username      String   @id @db.VarChar(20)
-  password      String   @db.VarChar(100)
-  role_id       String   @db.VarChar(10)
-  refresh_token String?  @db.Text
-  created_at    DateTime @default(now())
-  updated_at    DateTime @updatedAt
+  username      String    @id @db.VarChar(20)
+  password      String    @db.VarChar(100)
+  role_id       String    @db.VarChar(10)
+  refresh_token String?   @db.Text
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+  deleted_at    DateTime?
 
   role Role @relation(fields: [role_id], references: [id])
 
@@ -36,15 +38,16 @@ model Authentication {
 }
 
 model User {
-  username      String   @id @db.VarChar(20)
-  first_name    String   @db.VarChar(100)
-  last_name     String   @db.VarChar(100)
-  email         String   @db.VarChar(100)
-  address       String?  @db.Text
-  phone         String?  @db.VarChar(20)
-  profile_photo String?  @db.Text
-  created_at    DateTime @default(now())
-  updated_at    DateTime @updatedAt
+  username      String    @id @db.VarChar(20)
+  first_name    String    @db.VarChar(100)
+  last_name     String    @db.VarChar(100)
+  email         String    @db.VarChar(100)
+  address       String?   @db.Text
+  phone         String?   @db.VarChar(20)
+  profile_photo String?   @db.Text
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+  deleted_at    DateTime?
 
   user_withdrawals UserWithdrawal[]
   UserTransaction  UserTransaction[]
@@ -53,20 +56,22 @@ model User {
 }
 
 model Wallet {
-  username   String   @id @db.VarChar(20)
-  balance    Decimal  @default(0) @db.Money
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  username   String    @id @db.VarChar(20)
+  balance    Decimal   @default(0) @db.Money
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
 
   @@map("wallets")
 }
 
 model UserWithdrawal {
-  id         String   @id @db.VarChar(100)
-  user_id    String   @db.VarChar(20)
-  amount     Decimal  @default(0) @db.Money
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  id         String    @id @db.VarChar(100)
+  user_id    String    @db.VarChar(20)
+  amount     Decimal   @default(0) @db.Money
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
 
   user User @relation(fields: [user_id], references: [username])
 
@@ -74,15 +79,16 @@ model UserWithdrawal {
 }
 
 model UserTransaction {
-  id              String   @id @db.VarChar(100)
-  garbage_id      Int?     @db.Integer
-  user_id         String   @db.VarChar(20)
-  organization_id Int      @db.Integer
-  qty             Decimal  @default(0) @db.Decimal()
-  total_price     Decimal  @default(0) @db.Money
-  status          Status   @default(PENDING)
-  created_at      DateTime @default(now())
-  updated_at      DateTime @updatedAt
+  id              String    @id @db.VarChar(100)
+  garbage_id      Int?      @db.Integer
+  user_id         String    @db.VarChar(20)
+  organization_id Int       @db.Integer
+  qty             Decimal   @default(0) @db.Decimal()
+  total_price     Decimal   @default(0) @db.Money
+  status          Status    @default(PENDING)
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
+  deleted_at      DateTime?
 
   garbage      Garbage?     @relation(fields: [garbage_id], references: [id], onDelete: SetNull)
   user         User         @relation(fields: [user_id], references: [username])
@@ -92,12 +98,14 @@ model UserTransaction {
 }
 
 model Organization {
-  id                   Int                    @id @default(autoincrement())
-  name                 String                 @db.VarChar(100)
-  address              String                 @db.Text
-  balance              Decimal                @default(0) @db.Money
-  created_at           DateTime               @default(now())
-  updated_at           DateTime               @updatedAt
+  id         Int       @id @default(autoincrement())
+  name       String    @db.VarChar(100)
+  address    String    @db.Text
+  balance    Decimal   @default(0) @db.Money
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+
   Cashout              Cashout[]
   UserTransaction      UserTransaction[]
   CollectorTransaction CollectorTransaction[]
@@ -106,12 +114,13 @@ model Organization {
 }
 
 model Cashout {
-  id              String   @id @db.VarChar(100)
-  organization_id Int      @db.Integer
-  description     String   @db.Text
-  amount          Decimal  @db.Money
-  created_at      DateTime @default(now())
-  updated_at      DateTime @updatedAt
+  id              String    @id @db.VarChar(100)
+  organization_id Int       @db.Integer
+  description     String    @db.Text
+  amount          Decimal   @db.Money
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
+  deleted_at      DateTime?
 
   organization Organization @relation(fields: [organization_id], references: [id])
 
@@ -119,11 +128,12 @@ model Cashout {
 }
 
 model Category {
-  id         Int      @id @default(autoincrement())
-  name       String   @db.VarChar(100)
-  icon       String?  @db.Text
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  id         Int       @id @default(autoincrement())
+  name       String    @db.VarChar(100)
+  icon       String?   @db.Text
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
 
   garbages Garbage[]
 
@@ -131,15 +141,16 @@ model Category {
 }
 
 model Garbage {
-  id          Int      @id @default(autoincrement())
-  name        String   @db.VarChar(100)
-  category_id Int?     @db.Integer
-  unit        String?  @db.VarChar(100)
-  buy_price   Decimal  @default(0) @db.Money
-  sell_price  Decimal  @default(0) @db.Money
-  stock       Decimal  @default(0) @db.Decimal()
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
+  id          Int       @id @default(autoincrement())
+  name        String    @db.VarChar(100)
+  category_id Int?      @db.Integer
+  unit        String?   @db.VarChar(100)
+  buy_price   Decimal   @default(0) @db.Money
+  sell_price  Decimal   @default(0) @db.Money
+  stock       Decimal   @default(0) @db.Decimal()
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+  deleted_at  DateTime?
 
   category               Category?              @relation(fields: [category_id], references: [id], onDelete: SetNull)
   user_transactions      UserTransaction[]
@@ -149,26 +160,29 @@ model Garbage {
 }
 
 model Collector {
-  id                   Int                    @id @default(autoincrement())
-  name                 String                 @db.VarChar(100)
-  address              String                 @db.Text
-  created_at           DateTime               @default(now())
-  updated_at           DateTime               @updatedAt
+  id         Int       @id @default(autoincrement())
+  name       String    @db.VarChar(100)
+  address    String    @db.Text
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+
   CollectorTransaction CollectorTransaction[]
 
   @@map("collectors")
 }
 
 model CollectorTransaction {
-  id              String   @id @db.VarChar(100)
-  garbage_id      Int?     @db.Integer
-  collector_id    Int?     @db.Integer
-  organization_id Int      @db.Integer
-  qty             Decimal  @default(0) @db.Decimal()
-  total_price     Decimal  @default(0) @db.Money
-  status          Status   @default(PENDING)
-  created_at      DateTime @default(now())
-  updated_at      DateTime @updatedAt
+  id              String    @id @db.VarChar(100)
+  garbage_id      Int?      @db.Integer
+  collector_id    Int?      @db.Integer
+  organization_id Int       @db.Integer
+  qty             Decimal   @default(0) @db.Decimal()
+  total_price     Decimal   @default(0) @db.Money
+  status          Status    @default(PENDING)
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
+  deleted_at      DateTime?
 
   garbage      Garbage?     @relation(fields: [garbage_id], references: [id], onDelete: SetNull)
   collector    Collector?   @relation(fields: [collector_id], references: [id], onDelete: SetNull)
