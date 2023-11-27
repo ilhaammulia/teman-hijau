@@ -179,20 +179,21 @@ const acceptTransaction = async (transactionId) => {
   if (!transaction)
     throw new ResponseError(404, "Data transaksi tidak ditemukan.");
 
-  const tx = await prismaClient.userTransaction.update({
-    data: {
-      status: "ACCEPTED",
-    },
-    where: { id: transactionId },
-  });
+  const [currentTransaction, updatedWallet] = await prismaClient.$transaction([
+    prismaClient.userTransaction.update({
+      data: {
+        status: "ACCEPTED",
+      },
+      where: { id: transactionId },
+    }),
+    prismaClient.wallet.update({
+      data: {
+        balance: { increment: transaction.total_price },
+      },
+    }),
+  ]);
 
-  await prismaClient.wallet.update({
-    data: {
-      balance: { increment: transaction.total_price },
-    },
-  });
-
-  return tx;
+  return currentTransaction;
 };
 
 export default {
