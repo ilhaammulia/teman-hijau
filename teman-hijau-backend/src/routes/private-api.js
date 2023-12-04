@@ -1,6 +1,9 @@
 import express from "express";
 import { verifyAuthMiddleware } from "../middlewares/verify-auth-middleware.js";
-import { staffOnlyMiddleware } from "../middlewares/staff-only-middleware.js";
+import {
+  staffOnlyMiddleware,
+  adminOnlyMiddleware,
+} from "../middlewares/staff-only-middleware.js";
 import userController from "../controllers/user-controller.js";
 import garbageController from "../controllers/garbage-controller.js";
 import collectorController from "../controllers/collector-controller.js";
@@ -19,7 +22,14 @@ privateRouter.post(
 );
 privateRouter.get(
   "/api/users/transactions/:id/accept",
+  adminOnlyMiddleware,
   userController.acceptTransaction
+);
+
+privateRouter.get(
+  "/api/users/transactions/:id/reject",
+  adminOnlyMiddleware,
+  userController.rejectTransaction
 );
 
 privateRouter.use("/api/garbages", staffOnlyMiddleware);

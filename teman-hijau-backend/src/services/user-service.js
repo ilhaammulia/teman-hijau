@@ -190,6 +190,33 @@ const acceptTransaction = async (transactionId) => {
       data: {
         balance: { increment: transaction.total_price },
       },
+      where: { username: transaction.user_id },
+    }),
+  ]);
+
+  return currentTransaction;
+};
+
+const rejectTransaction = async (transactionId) => {
+  const transaction = await prismaClient.userTransaction.findUnique({
+    where: { id: transactionId },
+  });
+
+  if (!transaction)
+    throw new ResponseError(404, "Data transaksi tidak ditemukan.");
+
+  const [currentTransaction, updatedWallet] = await prismaClient.$transaction([
+    prismaClient.userTransaction.update({
+      data: {
+        status: "REJECTED",
+      },
+      where: { id: transactionId },
+    }),
+    prismaClient.wallet.update({
+      data: {
+        balance: { increment: transaction.total_price },
+      },
+      where: { username: transaction.user_id },
     }),
   ]);
 
@@ -205,4 +232,5 @@ export default {
   requestWithdrawal,
   createTransaction,
   acceptTransaction,
+  rejectTransaction,
 };

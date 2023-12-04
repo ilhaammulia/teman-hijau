@@ -85,6 +85,15 @@ const acceptTransaction = async (req, res, next) => {
   }
 };
 
+const rejectTransaction = async (req, res, next) => {
+  try {
+    const updated = await userService.rejectTransaction(req.params.id);
+    res.status(200).json({ data: updated });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export default {
   register,
   login,
@@ -94,4 +103,5 @@ export default {
   requestWithdrawal,
   createTransaction,
   acceptTransaction,
+  rejectTransaction,
 };
