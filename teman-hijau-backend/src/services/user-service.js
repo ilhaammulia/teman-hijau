@@ -145,6 +145,33 @@ const requestWithdrawal = async (user, request) => {
   });
 };
 
+const acceptWithdrawal = async (user, withdrawId) => {
+  const withdraw = await prismaClient.userWithdrawal.findUnique({
+    where: { id: withdrawId },
+  });
+
+  if (!withdraw)
+    throw new ResponseError(404, "Data penarikan tidak ditemukan.");
+
+  const [currentWithdraw, updatedWallet] = await prismaClient.$transaction([
+    prismaClient.userWithdrawal.update({
+      data: {
+        status: "ACCEPTED",
+        staff_id: user.id,
+      },
+      where: { id: transactionId },
+    }),
+    prismaClient.wallet.update({
+      data: {
+        balance: { increment: withdraw.total_price },
+      },
+      where: { username: transaction.user_id },
+    }),
+  ]);
+
+  return currentTransaction;
+};
+
 const createTransaction = async (user, request) => {
   const data = validate(transactionValidation, request);
   const id = generateRandomId("INV");
@@ -205,20 +232,12 @@ const rejectTransaction = async (transactionId) => {
   if (!transaction)
     throw new ResponseError(404, "Data transaksi tidak ditemukan.");
 
-  const [currentTransaction, updatedWallet] = await prismaClient.$transaction([
-    prismaClient.userTransaction.update({
-      data: {
-        status: "REJECTED",
-      },
-      where: { id: transactionId },
-    }),
-    prismaClient.wallet.update({
-      data: {
-        balance: { increment: transaction.total_price },
-      },
-      where: { username: transaction.user_id },
-    }),
-  ]);
+  const currentTransaction = await prismaClient.userTransaction.update({
+    data: {
+      status: "REJECTED",
+    },
+    where: { id: transactionId },
+  });
 
   return currentTransaction;
 };
