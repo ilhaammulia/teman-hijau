@@ -67,6 +67,18 @@ const requestWithdrawal = async (req, res, next) => {
   }
 };
 
+const acceptWithdrawal = async (req, res, next) => {
+  try {
+    const withdraw = await userService.acceptWithdrawal(
+      req.user,
+      req.params.id
+    );
+    res.status(200).json({ data: withdraw });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const createTransaction = async (req, res, next) => {
   try {
     const transaction = await userService.createTransaction(req.user, req.body);
@@ -104,4 +116,5 @@ export default {
   createTransaction,
   acceptTransaction,
   rejectTransaction,
+  acceptWithdrawal,
 };

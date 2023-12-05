@@ -10,6 +10,7 @@ import {
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { generateRandomId } from "../utils/generate-random.js";
+import { logger } from "../applications/logging.js";
 
 const register = async (request) => {
   const user = validate(registerUserValidation, request);
@@ -159,17 +160,17 @@ const acceptWithdrawal = async (user, withdrawId) => {
         status: "ACCEPTED",
         staff_id: user.id,
       },
-      where: { id: transactionId },
+      where: { id: withdrawId },
     }),
     prismaClient.wallet.update({
       data: {
-        balance: { increment: withdraw.total_price },
+        balance: { decrement: withdraw.amount },
       },
-      where: { username: transaction.user_id },
+      where: { username: withdraw.user_id },
     }),
   ]);
 
-  return currentTransaction;
+  return currentWithdraw;
 };
 
 const createTransaction = async (user, request) => {
@@ -249,6 +250,7 @@ export default {
   wallet,
   withdrawal,
   requestWithdrawal,
+  acceptWithdrawal,
   createTransaction,
   acceptTransaction,
   rejectTransaction,
