@@ -206,13 +206,6 @@ const createTransaction = async (user, request) => {
   data.staff_id = user.id;
   data.total_price = garbage.buy_price * data.qty;
 
-  garbage.stock = garbage.stock + data.qty;
-
-  await prismaClient.garbage.update({
-    data: garbage,
-    where: { id: garbage.id },
-  });
-
   return prismaClient.userTransaction.create({
     data: data,
   });
@@ -226,20 +219,27 @@ const acceptTransaction = async (transactionId) => {
   if (!transaction)
     throw new ResponseError(404, "Data transaksi tidak ditemukan.");
 
-  const [currentTransaction, updatedWallet] = await prismaClient.$transaction([
-    prismaClient.userTransaction.update({
-      data: {
-        status: "ACCEPTED",
-      },
-      where: { id: transactionId },
-    }),
-    prismaClient.wallet.update({
-      data: {
-        balance: { increment: transaction.total_price },
-      },
-      where: { username: transaction.user_id },
-    }),
-  ]);
+  const [currentTransaction, updatedWallet, updatedGarbage] =
+    await prismaClient.$transaction([
+      prismaClient.userTransaction.update({
+        data: {
+          status: "ACCEPTED",
+        },
+        where: { id: transactionId },
+      }),
+      prismaClient.wallet.update({
+        data: {
+          balance: { increment: transaction.total_price },
+        },
+        where: { username: transaction.user_id },
+      }),
+      prismaClient.garbage.update({
+        data: {
+          stock: { increment: transaction.qty },
+        },
+        where: { id: transaction.garbage_id },
+      }),
+    ]);
 
   return currentTransaction;
 };
