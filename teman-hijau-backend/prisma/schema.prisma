@@ -49,10 +49,11 @@ model User {
   updated_at    DateTime  @updatedAt
   deleted_at    DateTime?
 
-  user_withdrawals     UserWithdrawal[]
   CollectorTransaction CollectorTransaction[]
   UserTransaction      UserTransaction[]      @relation(name: "member")
   WorkerTransaction    UserTransaction[]      @relation(name: "worker")
+  UserWithdrawal       UserWithdrawal[]
+  WorkerWithdrawal     UserWithdrawal[]       @relation(name: "worker")
 
   @@map("users")
 }
@@ -70,12 +71,15 @@ model Wallet {
 model UserWithdrawal {
   id         String    @id @db.VarChar(100)
   user_id    String    @db.VarChar(20)
+  staff_id   String?   @db.VarChar(20)
   amount     Decimal   @default(0) @db.Money
+  status     Status    @default(PENDING)
   created_at DateTime  @default(now())
   updated_at DateTime  @updatedAt
   deleted_at DateTime?
 
-  user User @relation(fields: [user_id], references: [username])
+  user  User  @relation(fields: [user_id], references: [username])
+  staff User? @relation(name: "worker", fields: [staff_id], references: [username])
 
   @@map("user_withdrawals")
 }
