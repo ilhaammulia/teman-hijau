@@ -16,7 +16,12 @@ privateRouter.get("/api/users/wallet", userController.wallet);
 privateRouter.get("/api/users/withdrawals", userController.withdrawal);
 privateRouter.post("/api/users/withdrawals", userController.requestWithdrawal);
 privateRouter.get(
-  "/api/users/withdrawals/:id",
+  "/api/users/withdrawals/:id/accept",
+  staffOnlyMiddleware,
+  userController.acceptWithdrawal
+);
+privateRouter.get(
+  "/api/users/withdrawals/:id/reject",
   staffOnlyMiddleware,
   userController.acceptWithdrawal
 );

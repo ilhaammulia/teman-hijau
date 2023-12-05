@@ -267,7 +267,7 @@ describe("/api/users/withdrawals/:id", () => {
     await prismaClient.wallet.deleteMany();
   });
 
-  describe("GET /api/users/withdrawals/:id", () => {
+  describe("GET /api/users/withdrawals/:id/accept", () => {
     it("should reject if not staff", async () => {
       const login = await supertest(web).post("/api/users/login").send({
         username: "user",
@@ -276,7 +276,7 @@ describe("/api/users/withdrawals/:id", () => {
 
       const withdraw = await prismaClient.userWithdrawal.findFirst();
       const result = await supertest(web)
-        .get(`/api/users/withdrawals/${withdraw.id}`)
+        .get(`/api/users/withdrawals/${withdraw.id}/accept`)
         .set("Authorization", `Bearer ${login.body.data.access_token}`);
 
       expect(result.status).toBe(403);
@@ -291,7 +291,39 @@ describe("/api/users/withdrawals/:id", () => {
 
       const withdraw = await prismaClient.userWithdrawal.findFirst();
       const result = await supertest(web)
-        .get(`/api/users/withdrawals/${withdraw.id}`)
+        .get(`/api/users/withdrawals/${withdraw.id}/accept`)
+        .set("Authorization", `Bearer ${login.body.data.access_token}`);
+
+      expect(result.status).toBe(200);
+      expect(result.body.data).toBeDefined();
+    });
+  });
+
+  describe("GET /api/users/withdrawals/:id/reject", () => {
+    it("should reject if not staff", async () => {
+      const login = await supertest(web).post("/api/users/login").send({
+        username: "user",
+        password: "rahasia",
+      });
+
+      const withdraw = await prismaClient.userWithdrawal.findFirst();
+      const result = await supertest(web)
+        .get(`/api/users/withdrawals/${withdraw.id}/reject`)
+        .set("Authorization", `Bearer ${login.body.data.access_token}`);
+
+      expect(result.status).toBe(403);
+      expect(result.body.errors).toBeDefined();
+    });
+
+    it("should reject withdrawal", async () => {
+      const login = await supertest(web).post("/api/users/login").send({
+        username: "ilham",
+        password: "rahasia",
+      });
+
+      const withdraw = await prismaClient.userWithdrawal.findFirst();
+      const result = await supertest(web)
+        .get(`/api/users/withdrawals/${withdraw.id}/reject`)
         .set("Authorization", `Bearer ${login.body.data.access_token}`);
 
       expect(result.status).toBe(200);

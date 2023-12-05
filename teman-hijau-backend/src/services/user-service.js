@@ -173,6 +173,25 @@ const acceptWithdrawal = async (user, withdrawId) => {
   return currentWithdraw;
 };
 
+const rejectWithdrawal = async (user, withdrawId) => {
+  const withdraw = await prismaClient.userWithdrawal.findUnique({
+    where: { id: withdrawId },
+  });
+
+  if (!withdraw)
+    throw new ResponseError(404, "Data penarikan tidak ditemukan.");
+
+  const currentWithdraw = await prismaClient.userWithdrawal.update({
+    data: {
+      status: "REJECTED",
+      staff_id: user.id,
+    },
+    where: { id: withdrawId },
+  });
+
+  return currentWithdraw;
+};
+
 const createTransaction = async (user, request) => {
   const data = validate(transactionValidation, request);
   const id = generateRandomId("INV");
@@ -251,6 +270,7 @@ export default {
   withdrawal,
   requestWithdrawal,
   acceptWithdrawal,
+  rejectWithdrawal,
   createTransaction,
   acceptTransaction,
   rejectTransaction,
