@@ -68,6 +68,10 @@ privateRouter.use("/api/collectors", staffOnlyMiddleware);
 
 privateRouter.post("/api/collectors", collectorController.createCollector);
 privateRouter.get("/api/collectors", collectorController.collectors);
+privateRouter.post(
+  "/api/collectors/transaction",
+  collectorController.createTransaction
+);
 privateRouter.put("/api/collectors/:id", collectorController.updateCollector);
 privateRouter.delete(
   "/api/collectors/:id",

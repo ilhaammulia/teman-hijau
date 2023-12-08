@@ -45,9 +45,22 @@ const deleteCollector = async (req, res, next) => {
   }
 };
 
+const createTransaction = async (req, res, next) => {
+  try {
+    const transaction = await collectorService.createTransaction(
+      req.user,
+      req.body
+    );
+    res.status(201).json({ data: transaction });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export default {
   createCollector,
   collectors,
   updateCollector,
   deleteCollector,
+  createTransaction,
 };

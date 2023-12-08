@@ -7,4 +7,11 @@ const collectorValidation = Joi.object({
   allowUnknown: false,
 });
 
-export { collectorValidation };
+const transactionValidation = Joi.object({
+  garbage_id: Joi.number().required(),
+  organization_id: Joi.number().required(),
+  collector_id: Joi.number().required(),
+  qty: Joi.number().required(),
+});
+
+export { collectorValidation, transactionValidation };
