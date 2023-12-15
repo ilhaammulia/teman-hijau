@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import AppLayout from '@/layout/AppLayout.vue';
+import UserLayout from '@/layout/user/Layout.vue';
 import AdminLayout from '@/layout/admin/Layout.vue';
 
 import { setTitle } from './middleware';
@@ -62,20 +63,27 @@ const routes = [
                 component: () => import('@/views/pages/admin/organization/Company.vue')
             },
             {
-                path: 'organization/company/profile',
-                name: 'admin.organization.company.profile',
+                path: 'organization/collectors',
+                name: 'admin.organization.collectors',
                 meta: {
-                    title: 'Profile'
+                    title: 'Collectors'
                 },
-                component: () => import('@/views/pages/admin/organization/menu/Profile.vue')
-            },
+                component: () => import('@/views/pages/admin/organization/Collector.vue')
+            }
+        ]
+    },
+    {
+        path: '/user',
+        name: 'user',
+        component: UserLayout,
+        redirect: (to) => {
+            return { name: 'user.home' };
+        },
+        children: [
             {
-                path: 'organization/company/cashflow',
-                name: 'admin.organization.company.cashflow',
-                meta: {
-                    title: 'Cashflow'
-                },
-                component: () => import('@/views/pages/admin/organization/menu/Cashflow.vue')
+                path: 'home',
+                name: 'user.home',
+                component: () => import('@/views/pages/user/Home.vue')
             }
         ]
     },

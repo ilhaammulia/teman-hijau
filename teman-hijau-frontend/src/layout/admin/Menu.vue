@@ -21,7 +21,7 @@ const model = ref([
     label: 'Organization',
     items: [
       { label: 'Company', icon: 'pi pi-fw pi-building', to: { name: 'admin.organization.company' } },
-      { label: 'Collectors', icon: 'pi pi-fw pi-truck', to: '/uikit/misc' },
+      { label: 'Collectors', icon: 'pi pi-fw pi-truck', to: { name: 'admin.organization.collectors' } },
     ]
   },
 ]);

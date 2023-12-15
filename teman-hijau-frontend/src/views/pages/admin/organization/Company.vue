@@ -84,6 +84,7 @@ const formatCurrency = (value) => {
                   {{ formatCurrency(slotProps.data.total_price) }}
                 </template>
               </Column>
+              <Column field="type" header="Type" :sortable="true"></Column>
               <Column field="created_at" header="Created At" :sortable="true"></Column>
               <Column style="width: 15%">
                 <template #header>Action</template>
@@ -94,18 +95,20 @@ const formatCurrency = (value) => {
             </DataTable>
           </TabPanel>
           <TabPanel header="Settings">
-            <div class="field">
-                    <label for="name1">Name</label>
-                    <InputText id="name1" type="text" />
-                </div>
-                <div class="field">
-                    <label for="email1">Email</label>
-                    <InputText id="email1" type="text" />
-                </div>
-                <div class="field">
-                    <label for="age1">Age</label>
-                    <InputText id="age1" type="text" />
-                </div>
+            <div class="flex flex-column gap-4">
+              <div class="flex flex-column gap-2">
+                  <label for="company-name">Company Name</label>
+                  <span class="p-input-icon-left">
+                      <i class="pi pi-fw pi-building" />
+                      <InputText id="company-name" placeholder="Company Name" />
+                  </span>
+              </div>
+              <div class="flex flex-column gap-2">
+                  <label for="company-address">Company Address</label>
+                  <Textarea rows="5" cols="30" id="company-address" placeholder="Company Address" />
+              </div>
+              <Button label="Submit" />
+            </div>
           </TabPanel>
         </TabView>
       </div>
