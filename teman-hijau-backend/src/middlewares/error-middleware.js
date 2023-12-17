@@ -2,6 +2,12 @@ import { ResponseError } from "../exceptions/response-error.js";
 
 const errorMiddleware = async (err, req, res, next) => {
   if (!err) {
+    res.header("Access-Control-Allow-Origin", "http://localhost:5173");
+    res.header("Access-Control-Allow-Credentials", true);
+    res.header(
+      "Access-Control-Allow-Headers",
+      "Origin, X-Requested-With, Content-Type, Accept"
+    );
     next();
     return;
   }

@@ -4,9 +4,11 @@ import AppTopbar from '../AppTopbar.vue';
 import AppFooter from '../AppFooter.vue';
 import { useLayout } from '@/layout/composables/layout';
 
-const { layoutConfig, layoutState, isSidebarActive, } = useLayout();
+const { layoutConfig, layoutState, isSidebarActive, onMenuToggle } = useLayout();
+layoutState.staticMenuMobileActive.value = false;
 
 const outsideClickListener = ref(null);
+
 
 watch(isSidebarActive, (newVal) => {
     if (newVal) {
@@ -58,8 +60,8 @@ const isOutsideClicked = (event) => {
 <template>
     <div class="layout-wrapper" :class="containerClass">
         <app-topbar></app-topbar>
-        <div class="layout-main-container">
-            <div class="layout-main">
+        <div class="flex flex-column h-screen mt-8 pt-4 px-4">
+            <div class="layout-main mb-auto" :class="{'mx-auto': !layoutState.staticMenuMobileActive.value}" :style="!layoutState.staticMenuMobileActive.value ? 'max-width: 80rem;' : ''" >
                 <router-view></router-view>
             </div>
             <app-footer></app-footer>

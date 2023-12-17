@@ -11,6 +11,15 @@ const registerUserValidation = Joi.object({
   allowUnknown: false,
 });
 
+const updateUservalidation = Joi.object({
+  password: Joi.string().max(100).optional(),
+  first_name: Joi.string().max(100).optional(),
+  last_name: Joi.string().max(100).optional(),
+  email: Joi.string().max(100).optional(),
+  address: Joi.string().optional(),
+  phone: Joi.string().max(20).optional(),
+});
+
 const loginUserValidation = Joi.object({
   username: Joi.string().max(20).required(),
   password: Joi.string().max(100).required(),
@@ -34,4 +43,5 @@ export {
   loginUserValidation,
   withdrawalUserValidation,
   transactionValidation,
+  updateUservalidation,
 };

@@ -12,6 +12,7 @@ const privateRouter = new express.Router();
 privateRouter.use(verifyAuthMiddleware);
 
 privateRouter.get("/api/users", userController.fetch);
+privateRouter.put("/api/users", userController.update);
 privateRouter.get("/api/users/wallet", userController.wallet);
 privateRouter.get("/api/users/withdrawals", userController.withdrawal);
 privateRouter.post("/api/users/withdrawals", userController.requestWithdrawal);

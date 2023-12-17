@@ -30,11 +30,31 @@ export const verifyAuthMiddleware = async (req, res, next) => {
     next();
     return;
   } catch (error) {
-    res
-      .status(401)
-      .json({
-        errors: "Anda tidak memiliki akses.",
-      })
-      .end();
+    if (error.message == "jwt expired") {
+      try {
+        const refreshToken = req.cookies.refresh_token;
+        const decoded = await verifyAuth(
+          refreshToken,
+          process.env.REFRESH_TOKEN_SECRET
+        );
+        req.user = decoded.user;
+        next();
+        return;
+      } catch (error) {
+        res
+          .status(401)
+          .json({
+            errors: "Anda tidak memiliki akses.",
+          })
+          .end();
+      }
+    } else {
+      res
+        .status(401)
+        .json({
+          errors: "Anda tidak memiliki akses.",
+        })
+        .end();
+    }
   }
 };

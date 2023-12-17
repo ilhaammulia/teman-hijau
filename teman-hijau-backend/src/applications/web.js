@@ -4,9 +4,16 @@ import { publicRouter } from "../routes/public-api.js";
 import { privateRouter } from "../routes/private-api.js";
 
 import cors from "cors";
+import cookieParser from "cookie-parser";
 
 export const web = express();
-web.use(cors());
+web.use(
+  cors({
+    origin: true,
+    credentials: true,
+  })
+);
+web.use(cookieParser());
 web.use(express.json());
 
 web.use(publicRouter);

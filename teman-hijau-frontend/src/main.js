@@ -1,6 +1,7 @@
 import { createApp } from 'vue';
 import App from './App.vue';
 import router from './router';
+import store from './store';
 
 import PrimeVue from 'primevue/config';
 import AutoComplete from 'primevue/autocomplete';
@@ -104,8 +105,14 @@ import BlockViewer from '@/components/BlockViewer.vue';
 
 import '@/assets/styles.scss';
 
+import axios from 'axios';
+
+axios.defaults.withCredentials = true;
+axios.defaults.headers.common['Authorization'] = `Bearer ${store.getters.getToken}`;
+
 const app = createApp(App);
 
+app.use(store);
 app.use(router);
 app.use(PrimeVue, { ripple: true });
 app.use(ToastService);

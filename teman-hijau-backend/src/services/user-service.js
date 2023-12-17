@@ -6,11 +6,11 @@ import {
   loginUserValidation,
   withdrawalUserValidation,
   transactionValidation,
+  updateUservalidation,
 } from "../validations/user-validation.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { generateRandomId } from "../utils/generate-random.js";
-import { logger } from "../applications/logging.js";
 
 const register = async (request) => {
   const user = validate(registerUserValidation, request);
@@ -63,8 +63,10 @@ const login = async (request) => {
     where: {
       username: loginUser.username,
     },
-    include: {
-      role: true,
+    select: {
+      username: true,
+      password: true,
+      role_id: true,
     },
   });
 
@@ -102,12 +104,59 @@ const login = async (request) => {
   return { ...updatedUser, access_token: accessToken };
 };
 
+const update = async (user, req) => {
+  const data = validate(updateUservalidation, req);
+
+  return prismaClient.user.update({
+    where: { username: user.username },
+    data: data,
+  });
+};
+
 const fetch = async (user) => {
-  return prismaClient.user.findUnique({
+  const fetched = await prismaClient.user.findUnique({
     where: {
       username: user.username,
     },
+    include: {
+      UserWithdrawal: {
+        include: {
+          staff: true,
+        },
+        orderBy: {
+          created_at: "desc",
+        },
+      },
+      UserTransaction: {
+        include: {
+          garbage: true,
+          staff: true,
+        },
+        orderBy: {
+          created_at: "desc",
+        },
+      },
+    },
   });
+
+  return {
+    first_name: fetched.first_name,
+    last_name: fetched.last_name,
+    email: fetched.email,
+    address: fetched.address,
+    phone: fetched.phone,
+    profile_photo: fetched.profile_photo,
+    pending_balance: {
+      balance: fetched.UserTransaction.reduce((prev, curr) => {
+        if (curr.status == "PENDING") {
+          prev += curr.total_price;
+        }
+      }, 0),
+      updated_at: null,
+    },
+    user_transactions: fetched.UserTransaction,
+    user_withdrawals: fetched.UserWithdrawal,
+  };
 };
 
 const wallet = async (user) => {
@@ -271,6 +320,7 @@ export default {
   register,
   login,
   fetch,
+  update,
   wallet,
   withdrawal,
   requestWithdrawal,

@@ -35,9 +35,9 @@ const model = ref([
         <li v-if="item.separator" class="menu-separator"></li>
       </template>
     </ul>
-    <a href="https://www.primefaces.org/primeblocks-vue/#/" target="_blank">
-      <img src="/layout/images/banner-primeblocks.png" alt="Prime Blocks" class="w-full mt-3" />
-    </a>
+    <router-link to="/">
+      <img src="/assets/images/small_hero.svg" alt="Prime Blocks" class="w-full mt-3" />
+    </router-link>
   </div>
 </template>
 

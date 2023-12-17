@@ -29,10 +29,19 @@ const fetch = async (req, res, next) => {
   try {
     const user = req.user;
     const profile = await userService.fetch(user);
-    user.profile = profile;
     res.status(200).json({
-      data: user,
+      data: profile,
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const update = async (req, res, next) => {
+  try {
+    const user = req.user;
+    const updated = await userService.update(user, req.body);
+    res.status(200).json({ data: updated });
   } catch (error) {
     next(error);
   }
@@ -122,6 +131,7 @@ export default {
   register,
   login,
   fetch,
+  update,
   wallet,
   withdrawal,
   requestWithdrawal,
