@@ -1,5 +1,5 @@
-import { ResponseError } from "../exceptions/response-error";
-import collectorService from "../services/collector-service";
+import { ResponseError } from "../exceptions/response-error.js";
+import collectorService from "../services/collector-service.js";
 
 const createCollector = async (req, res, next) => {
   try {

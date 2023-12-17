@@ -68,14 +68,19 @@ const login = async (request) => {
     },
   });
 
+  if (!user) {
+    throw new ResponseError(401, "Username atau Password salah.");
+  }
+
   const isPasswordMatched = await bcrypt.compare(
     loginUser.password,
     user.password
   );
 
-  if (!user || !isPasswordMatched) {
+  if (!isPasswordMatched) {
     throw new ResponseError(401, "Username atau Password salah.");
   }
+
   const accessToken = jwt.sign({ user }, process.env.ACCESS_TOKEN_SECRET, {
     expiresIn: "30s",
   });

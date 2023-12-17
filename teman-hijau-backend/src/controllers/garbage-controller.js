@@ -1,5 +1,5 @@
-import { ResponseError } from "../exceptions/response-error";
-import garbageService from "../services/garbage-service";
+import { ResponseError } from "../exceptions/response-error.js";
+import garbageService from "../services/garbage-service.js";
 
 const createCategory = async (req, res, next) => {
   try {
