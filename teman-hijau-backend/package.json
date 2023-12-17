@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "test": "jest -i",
-    "seed": "node ./prisma/seeds.js"
+    "seed": "node ./prisma/seeds.js",
+    "dev": "nodemon ./src/main.js"
   },
   "jest": {
     "transform": {
