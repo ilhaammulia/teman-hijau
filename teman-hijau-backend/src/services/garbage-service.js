@@ -75,6 +75,12 @@ const createGarbage = async (request) => {
 
 const garbages = async () => {
   return prismaClient.garbage.findMany({
+    where: {
+      deleted_at: null,
+    },
+    include: {
+      category: true,
+    },
     orderBy: {
       updated_at: "desc",
     },

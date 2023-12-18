@@ -16,6 +16,7 @@ const mutations = {
     },
     destroy(state) {
         state.user = null;
+        state.profile = null;
         state.token = null;
     }
 };

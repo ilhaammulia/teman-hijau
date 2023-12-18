@@ -2,32 +2,67 @@
 import moment from 'moment';
 import { FilterMatchMode } from 'primevue/api';
 import UserService from '../../../service/UserService';
+import axios from 'axios';
+
+const userService = new UserService();
 
 export default {
   data() {
     return {
       requestVisible: false,
-      amount: 0,
+      amount: 10000,
       wallet: null,
+      withdrawals: null,
       transactionFilter: {
+        global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+      },
+      withdrawalFilter: {
         global: { value: null, matchMode: FilterMatchMode.CONTAINS },
       }
     }
   },
   created() {
-    const userService = new UserService();
-
-    userService.getWallet().then(({ data }) => {
-      this.wallet = data;
-    });
+    this.updateData();
   },
-
   methods: {
+    updateData() {
+      userService.getWallet().then(({ data }) => {
+          this.wallet = data;
+        });
+
+        userService.getWithdrawals().then(({ data }) => {
+          this.withdrawals = data;
+        });
+    },
     parseDate(date) {
       if (date) {
         return moment(date).format("DD MMM Y")
       } else {
         return moment().format("DD MMM Y")
+      }
+    },
+    async requestWithdrawal(e) {
+      e.preventDefault();
+      try {
+        if (!this.amount || this.amount < 10000) {
+          this.$toast.add({ severity: 'error', summary: 'Request Failed', detail: 'Minimum withdrawal is Rp10.000.', life: 3000 });
+          return;
+        }
+
+        await axios.post(`${import.meta.env.VITE_BASE_API}/users/withdrawals`, {
+          amount: this.amount
+        });
+
+        this.wallet.balance -= this.amount;
+
+        this.updateData();
+
+        this.$toast.add({ severity: 'success', summary: 'Request Success', detail: 'Your withdrawals has been successfully created.', life: 3000 });
+        this.requestVisible = false;
+
+      } catch (error) {
+        const { errors } = error.response.data;
+        this.$toast.add({ severity: 'error', summary: 'Request Failed', detail: errors, life: 3000 });
       }
     }
   }
@@ -51,14 +86,17 @@ export default {
       </div>
     </div>
 
+    <Toast />
+
     <Dialog v-model:visible="requestVisible" modal header="Request Withdrawal" :style="{ width: '50rem' }"
       :breakpoints="{ '1199px': '75vw', '575px': '90vw' }">
       <div class="flex justify-content-center items-align-center p-4 w-full">
-        <form @submit="updateUser" class="max-w-full w-full">
+        <form @submit="requestWithdrawal" class="max-w-full w-full">
           <div>
-            <div class="">
-              <label for="wd-amount" class="block text-900 text-md font-medium mb-2">Amount (Rp.)</label>
-              <InputNumber v-model="amount" inputId="wd-amount" class="w-full mb-5" :minFractionDigits="2" />
+            <div class="mb-5">
+              <label for="wd-amount" class="block text-900 text-md font-medium mb-2">Amount</label>
+              <InputNumber v-model="amount" inputId="wd-amount" class="w-full" mode="currency" currency="IDR" locale="id-ID" />
+              <small id="wd-amount-help">Minimum withdrawal is Rp10.000.</small>
             </div>
             <Button type="submit" label="Request" class="w-full p-3 text-md"></Button>
           </div>
@@ -107,6 +145,54 @@ export default {
     <div class="col-12">
       <div class="card h-full">
         <div class="flex flex-column md:flex-row justify-content-between align-items-center mb-5">
+          <h5>Withdrawals</h5>
+          <span class="p-input-icon-left">
+            <i class="pi pi-search" />
+            <InputText v-model="withdrawalFilter['global'].value" class="w-full" placeholder="Keyword Search" />
+          </span>
+        </div>
+        <DataTable v-model:filters="withdrawalFilter"
+          :globalFilterFields="['id', 'amount', 'status', 'status']" dataKey="id"
+          :value="withdrawals" :rows="8" :paginator="true" responsiveLayout="scroll">
+          <Column field="id" header="ID" sortable></Column>
+          <Column field="amount" header="Amount" :sortable="true">
+            <template #body="{ data }">
+              <div class="flex align-items-center gap-2">
+                Rp{{ data.amount }}
+              </div>
+            </template></Column>
+          <Column field="status" header="Status" :sortable="true">
+            <template #body="{ data }">
+              <div class="flex align-items-center gap-2">
+                <Tag v-if="data.status == 'ACCEPTED'" icon="pi pi-check" severity="success" value="Accepted"></Tag>
+                <Tag v-if="data.status == 'PENDING'" icon="pi pi-clock" severity="warning" value="Pending"></Tag>
+                <Tag v-if="data.status == 'REJECTED'" icon="pi pi-times" severity="danger" value="Rejected"></Tag>
+              </div>
+            </template>
+          </Column>
+          <Column field="staff.first_name" header="Accepted By">
+            <template #body="{ data }">
+              <div class="flex align-items-center gap-2">
+                <img v-if="data.staff?.profile_photo" alt="Profile photo" :src="data.staff?.profile_photo"
+                  style="width: 32px" />
+                <span>{{ data.staff?.first_name }}</span>
+              </div>
+            </template>
+          </Column>
+          <Column field="created_at" header="Created At" :sortable="true">
+            <template #body="{ data }">
+              <div class="flex align-items-center gap-2">
+                {{ parseDate(data.created_at) }}
+              </div>
+            </template>
+          </Column>
+        </DataTable>
+      </div>
+    </div>
+
+    <div class="col-12">
+      <div class="card h-full">
+        <div class="flex flex-column md:flex-row justify-content-between align-items-center mb-5">
           <h5>Transactions</h5>
           <span class="p-input-icon-left">
             <i class="pi pi-search" />
@@ -115,7 +201,7 @@ export default {
         </div>
         <DataTable v-model:filters="transactionFilter"
           :globalFilterFields="['garbage.name', 'qty', 'total_price', 'status']" dataKey="id"
-          :value="$store.getters.getProfile.user_transactions" :rows="8" :paginator="true" responsiveLayout="scroll">
+           :rows="8" :paginator="true" responsiveLayout="scroll">
           <Column field="garbage.name" header="Garbage" sortable></Column>
           <Column field="qty" header="Qty" :sortable="true"></Column>
           <Column field="total_price" header="Total Price" :sortable="true"></Column>
@@ -126,10 +212,11 @@ export default {
                 <img alt="Profile photo" :src="`https://primefaces.org/cdn/primevue/images/avatar/onyamalimba.png`"
                   style="width: 32px" />
                 <span>{{ data.name }}</span>
-            </div>
-          </template>
-        </Column>
-      </DataTable>
+              </div>
+            </template>
+          </Column>
+        </DataTable>
+      </div>
     </div>
   </div>
-</div></template>
+</template>

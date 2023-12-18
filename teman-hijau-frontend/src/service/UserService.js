@@ -18,4 +18,12 @@ export default class UserService {
             }
         }).then((res) => res.data);
     }
+    getWithdrawals() {
+        return axios(`${import.meta.env.VITE_BASE_API}/users/withdrawals`, {
+            method: 'GET',
+            headers: {
+                authorization: `Bearer ${store.getters.getToken}`
+            }
+        }).then((res) => res.data);
+    }
 }

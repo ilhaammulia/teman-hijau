@@ -95,6 +95,9 @@ const routes = [
             {
                 path: 'home',
                 name: 'user.home',
+                meta: {
+                    title: 'Home'
+                },
                 component: () => import('@/views/pages/user/Home.vue')
             }
         ]

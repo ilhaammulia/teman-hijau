@@ -75,6 +75,7 @@ const login = async (request) => {
       username: true,
       password: true,
       role_id: true,
+      role: true,
     },
   });
 
@@ -102,10 +103,8 @@ const login = async (request) => {
   const updatedUser = await prismaClient.authentication.update({
     where: { username: user.username },
     data: { refresh_token: refreshToken },
-    select: {
-      username: true,
-      role_id: true,
-      refresh_token: true,
+    include: {
+      role: true,
     },
   });
 
@@ -139,14 +138,6 @@ const fetch = async (user) => {
       username: user.username,
     },
     include: {
-      UserWithdrawal: {
-        include: {
-          staff: true,
-        },
-        orderBy: {
-          created_at: "desc",
-        },
-      },
       UserTransaction: {
         include: {
           garbage: true,
@@ -174,8 +165,6 @@ const fetch = async (user) => {
       }, 0),
       updated_at: null,
     },
-    user_transactions: fetched.UserTransaction,
-    user_withdrawals: fetched.UserWithdrawal,
   };
 };
 
@@ -206,6 +195,13 @@ const requestWithdrawal = async (user, request) => {
     throw new ResponseError(400, "Saldo anda tidak mencukupi.");
   }
 
+  await prismaClient.wallet.update({
+    data: {
+      balance: { decrement: data.amount },
+    },
+    where: { username: user.username },
+  });
+
   return prismaClient.userWithdrawal.create({
     data: {
       id: id,
@@ -228,21 +224,13 @@ const acceptWithdrawal = async (user, withdrawId) => {
   if (!withdraw)
     throw new ResponseError(404, "Data penarikan tidak ditemukan.");
 
-  const [currentWithdraw, updatedWallet] = await prismaClient.$transaction([
-    prismaClient.userWithdrawal.update({
-      data: {
-        status: "ACCEPTED",
-        staff_id: user.id,
-      },
-      where: { id: withdrawId },
-    }),
-    prismaClient.wallet.update({
-      data: {
-        balance: { decrement: withdraw.amount },
-      },
-      where: { username: withdraw.user_id },
-    }),
-  ]);
+  const currentWithdraw = await prismaClient.userWithdrawal.update({
+    data: {
+      status: "ACCEPTED",
+      staff_id: user.id,
+    },
+    where: { id: withdrawId },
+  });
 
   return currentWithdraw;
 };
@@ -254,6 +242,13 @@ const rejectWithdrawal = async (user, withdrawId) => {
 
   if (!withdraw)
     throw new ResponseError(404, "Data penarikan tidak ditemukan.");
+
+  await prismaClient.wallet.update({
+    data: {
+      balance: { increment: withdraw.amount },
+    },
+    where: { username: withdraw.user_id },
+  });
 
   const currentWithdraw = await prismaClient.userWithdrawal.update({
     data: {
