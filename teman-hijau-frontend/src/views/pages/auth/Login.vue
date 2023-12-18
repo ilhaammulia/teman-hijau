@@ -63,30 +63,40 @@ export default {
         }
     },
     mounted() {
-        
+        const username = localStorage.getItem('remember');
+        if (username) {
+            this.username = username;
+            this.remember_me = true;
+        }
     },
     methods: {
         async login(e) {
             e.preventDefault();
-            const response = await axios(`${import.meta.env.VITE_BASE_API}/users/login`, {
-                method: "POST",
-                data: {
-                    username: this.username,
-                    password: this.password
-                },
-            });
+            try {
+                const response = await axios(`${import.meta.env.VITE_BASE_API}/users/login`, {
+                    method: "POST",
+                    data: {
+                        username: this.username,
+                        password: this.password
+                    },
+                });
 
-            const { data = {}, errors = "" } = response.data;
+                const { data } = response.data;
 
-            if (errors) {
+                if (this.remember_me) {
+                    localStorage.setItem('remember', this.username);
+                } else {
+                    localStorage.removeItem('remember');
+                }
+
+                this.$store.commit('setUser', { username: data.username, role: data.role_id, refresh_token: data.refresh_token });
+                this.$store.commit('setToken', data.access_token);
+
+                this.$router.push({ name: 'home' });
+            } catch (error) {
+                const {errors} = error.response.data;
                 this.errors = errors;
-                return;
             }
-
-            this.$store.commit('setUser', {username: data.username, role: data.role_id, refresh_token: data.refresh_token});
-            this.$store.commit('setToken', data.access_token);
-
-            this.$router.push({name: 'home'});    
         }
     },
 }
@@ -102,4 +112,5 @@ export default {
 .pi-eye-slash {
     transform: scale(1.6);
     margin-right: 1rem;
-}</style>
+}
+</style>

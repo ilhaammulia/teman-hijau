@@ -27,13 +27,21 @@ const register = async (request) => {
 
   user.password = await bcrypt.hash(user.password, 10);
 
+  const photos = [
+    "https://cdn-icons-png.flaticon.com/512/5640/5640467.png",
+    "https://cdn-icons-png.flaticon.com/512/3940/3940403.png",
+    "https://cdn-icons-png.flaticon.com/512/9007/9007291.png",
+    "https://cdn-icons-png.flaticon.com/512/13370/13370631.png",
+    "https://cdn-icons-png.flaticon.com/512/12931/12931705.png",
+  ];
+
   await prismaClient.user.create({
     data: {
       username: user.username,
       first_name: user.first_name,
       last_name: user.last_name,
       email: user.email,
-      profile_photo: "",
+      profile_photo: photos[Math.floor(Math.random() * photos.length)],
     },
   });
 
@@ -106,6 +114,18 @@ const login = async (request) => {
 
 const update = async (user, req) => {
   const data = validate(updateUservalidation, req);
+
+  if (data.password) {
+    data.password = await bcrypt.hash(data.password, 10);
+    await prismaClient.authentication.update({
+      where: { username: user.username },
+      data: {
+        password: data.password,
+      },
+    });
+  }
+
+  delete data.password;
 
   return prismaClient.user.update({
     where: { username: user.username },

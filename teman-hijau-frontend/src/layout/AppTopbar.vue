@@ -84,10 +84,15 @@ const updateUser = async (e) => {
     };
 
     await axios.put(`${import.meta.env.VITE_BASE_API}/users`, Object.fromEntries(
-        Object.entries(body).filter(([_, value]) => value !== null)
+        Object.entries(body).filter(([_, value]) => !!value)
     ));
 
     isProfileOpen.value = false;
+
+    if (form.value.password) {
+        store.commit('destroy');
+        router.push({ name: 'auth.login' });
+    }
 }
 </script>
 
