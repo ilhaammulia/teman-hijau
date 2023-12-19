@@ -1,5 +1,7 @@
 <script>
 import GarbageService from '../../../../service/GarbageService';
+import moment from 'moment';
+import { FilterMatchMode } from 'primevue/api';
 import axios from 'axios';
 
 const garbageService = new GarbageService();
@@ -8,6 +10,7 @@ export default {
   data() {
     return {
       garbages: [],
+      categories: [],
       productForm: {
         name: null,
         category: null,
@@ -17,11 +20,24 @@ export default {
         sell_price: 0
       },
       addProductModal: false,
+      editedRows: [],
+      removedGarbages: [],
+      filter: {
+        global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+      }
     }
   },
   created() {
     garbageService.getGarbages().then(({ data }) => {
       this.garbages = data;
+    });
+    garbageService.getCategories().then(({ data }) => {
+      this.categories = data.map((category) => {
+        return {
+          code: category.id,
+          name: category.name,
+        }
+      });
     });
   },
   computed: {
@@ -31,20 +47,72 @@ export default {
   },
   methods: {
     formatCurrency(value) {
-      return value.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' });
+      return String(value).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' });
+    },
+    parseDate(date) {
+      if (date) {
+        return moment(date).format("DD MMM Y")
+      } else {
+        return moment().format("DD MMM Y")
+      }
+    },
+    deleteGarbage() {
+      this.removedGarbages.map(async (garbage) => {
+        try {
+          await axios.delete(`/garbages/${garbage.id}`);
+          this.garbages.splice(this.garbages.indexOf(garbage), 1);
+        } catch (error) {}
+      });
+      this.removedGarbages = [];
+    },
+    async onRowEditSave(event) {
+      let { newData, index } = event;
+      if (typeof newData['category.name'] == 'string') {
+        const resp = await axios.post(`/garbages/categories`, {
+          name: newData['category.name']
+        });
+        newData.category_id = resp.data.data.id;
+
+        newData.category.id = resp.data.data.id;
+        newData.category.name = resp.data.data.name;
+      } else {
+        newData.category_id = newData['category.name'].code;
+
+        newData.category.id = newData['category.name'].code;
+        newData.category.name = newData['category.name'].name;
+      }
+
+      try {
+        await axios.put(`/garbages/${newData.id}`, 
+        {
+            name: newData.name,
+            category_id: newData.category_id,
+            stock: newData.stock,
+            unit: newData.unit,
+            buy_price: newData.buy_price,
+            sell_price: newData.sell_price,
+        });
+
+        delete newData['category.name'];
+        this.garbages[index] = newData;
+
+        this.$toast.add({ severity: 'success', summary: 'Request Success', detail: 'Data sampah telah diubah.', life: 3000 });
+      } catch (error) {
+        this.$toast.add({ severity: 'error', summary: 'Request Failed', detail: error, life: 3000 });
+      }
     },
     async submitProduct(e) {
       e.preventDefault();
 
       if (isNaN(this.productForm.category)) {
-        const resp = await axios.post(`${import.meta.env.VITE_BASE_API}/garbages/categories`, {
+        const resp = await axios.post(`/garbages/categories`, {
           name: this.productForm.category
         });
         this.productForm.category = resp.data.data.id;
       }
 
       try {
-        const response = await axios.post(`${import.meta.env.VITE_BASE_API}/garbages`, 
+        const response = await axios.post(`/garbages`, 
         {
             name: this.productForm.name,
             category_id: this.productForm.category,
@@ -88,7 +156,7 @@ export default {
           </div>
           <div class="w-full">
             <label for="category" class="block text-900 text-md font-medium mb-2">Category</label>
-            <Dropdown v-model="productForm.category" editable optionLabel="category" placeholder="Select category" class="w-full mb-5" />
+            <Dropdown v-model="productForm.category" :options="categories" optionLabel="name" editable placeholder="Select category" class="w-full mb-5" />
           </div>
         </div>
         <div class="flex flex-column sm:flex-row justify-content-between align-items-center sm:gap-4">
@@ -149,8 +217,8 @@ export default {
             <i class="pi pi-database text-blue-500 text-xl"></i>
           </div>
         </div>
-        <span class="text-green-500 font-medium">85 </span>
-        <span class="text-500">responded</span>
+        <span class="text-500">Last updated </span>
+        <span class="text-green-500 font-medium">{{ parseDate(garbages ? garbages[0]?.updated_at : null) }}</span>
       </div>
     </div>
 
@@ -158,36 +226,56 @@ export default {
       <div class="card h-full">
         <div class="flex justify-content-between align-items-center mb-5">
           <h5>Garbages</h5>
-          <span class="p-input-icon-left">
-            <i class="pi pi-search" />
-            <InputText placeholder="Keyword Search" />
-          </span>
+          <div class="flex gap-4">
+            <Button icon="pi pi-trash" severity="danger" aria-label="Delete" @click="deleteGarbage" />
+            <span class="p-input-icon-left">
+              <i class="pi pi-search" />
+              <InputText v-model="filter['global'].value" placeholder="Keyword Search" />
+            </span>
+          </div>
         </div>
-        <DataTable :value="garbages" :rows="8" :paginator="true" responsiveLayout="scroll">
-          <Column field="name" header="Name" :sortable="true"></Column>
-          <Column field="unit" header="Unit"></Column>
+        <DataTable v-model:filters="filter" :globalFilterFields="['name', 'unit', 'buy_price', 'sell_price', 'stock', 'category.name']" v-model:selection="removedGarbages" :value="garbages" :rows="8" :paginator="true" v-model:editingRows="editedRows" editMode="row" @row-edit-save="onRowEditSave" responsiveLayout="scroll">
+          <Column selectionMode="multiple" headerStyle="width: 3rem"></Column>
+          <Column field="name" header="Name" :sortable="true">
+            <template #editor="{ data, field }">
+                <InputText v-model="data[field]" />
+            </template>
+          </Column>
+          <Column field="unit" header="Unit">
+            <template #editor="{ data, field }">
+                <InputText v-model="data[field]" />
+            </template>
+          </Column>
           <Column field="buy_price" header="Buy Price" :sortable="true">
             <template #body="slotProps">
               Rp{{ formatCurrency(slotProps.data.buy_price) }}
+            </template>
+            <template #editor="{ data, field }">
+              <InputNumber v-model="data[field]" mode="currency" currency="IDR" locale="id-ID" />
             </template>
           </Column>
           <Column field="sell_price" header="Sell Price" :sortable="true">
             <template #body="slotProps">
               Rp{{ formatCurrency(slotProps.data.sell_price) }}
             </template>
+            <template #editor="{ data, field }">
+              <InputNumber v-model="data[field]" mode="currency" currency="IDR" locale="id-ID" />
+            </template>
           </Column>
-          <Column field="stock" header="Stock" :sortable="true"></Column>
+          <Column field="stock" header="Stock" :sortable="true">
+            <template #editor="{data, field}">
+              <InputNumber v-model="data[field]" showButtons buttonLayout="horizontal" decrementButtonClassName="p-button-secondary" incrementButtonClassName="p-button-secondary" incrementButtonIcon="pi pi-plus" decrementButtonIcon="pi pi-minus" />
+            </template>
+          </Column>
           <Column field="category.name" header="Category" :sortable="true">
             <template #body="{data}">
               <Tag icon="pi pi-tag" :value="data.category.name"></Tag>
             </template>
-          </Column>
-          <Column style="width: 15%">
-            <template #header>Action</template>
-            <template #body>
-              <Button icon="pi pi-search" type="button" class="p-button-text"></Button>
+            <template #editor="{data, field}">
+              <Dropdown v-model="data[field]" :options="categories" optionLabel="name" editable />
             </template>
           </Column>
+          <Column header="Action" :rowEditor="true" style="width: 10%; min-width: 8rem" bodyStyle="text-align-center"></Column>
         </DataTable>
       </div>
     </div>

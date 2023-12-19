@@ -3,7 +3,7 @@ import axios from 'axios';
 
 export default class UserService {
     getWallet() {
-        return axios(`${import.meta.env.VITE_BASE_API}/users/wallet`, {
+        return axios(`/users/wallet`, {
             method: 'GET',
             headers: {
                 authorization: `Bearer ${store.getters.getToken}`
@@ -11,7 +11,7 @@ export default class UserService {
         }).then((res) => res.data);
     }
     getProfile() {
-        return axios(`${import.meta.env.VITE_BASE_API}/users`, {
+        return axios(`/users`, {
             method: 'GET',
             headers: {
                 authorization: `Bearer ${store.getters.getToken}`
@@ -19,7 +19,24 @@ export default class UserService {
         }).then((res) => res.data);
     }
     getWithdrawals() {
-        return axios(`${import.meta.env.VITE_BASE_API}/users/withdrawals`, {
+        return axios(`/users/withdrawals`, {
+            method: 'GET',
+            headers: {
+                authorization: `Bearer ${store.getters.getToken}`
+            }
+        }).then((res) => res.data);
+    }
+    getUsers() {
+        return axios(`/users/all`, {
+            method: 'GET',
+            headers: {
+                authorization: `Bearer ${store.getters.getToken}`
+            }
+        }).then((res) => res.data);
+    }
+
+    getRoles() {
+        return axios(`/users/roles`, {
             method: 'GET',
             headers: {
                 authorization: `Bearer ${store.getters.getToken}`

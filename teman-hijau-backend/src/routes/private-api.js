@@ -11,11 +11,33 @@ import collectorController from "../controllers/collector-controller.js";
 const privateRouter = new express.Router();
 privateRouter.use(verifyAuthMiddleware);
 
+privateRouter.get(
+  "/api/users/roles",
+  staffOnlyMiddleware,
+  userController.roles
+);
+
 privateRouter.get("/api/users", userController.fetch);
+privateRouter.get(
+  "/api/users/all",
+  staffOnlyMiddleware,
+  userController.fetchAll
+);
+privateRouter.put(
+  "/api/users/:id",
+  adminOnlyMiddleware,
+  userController.updateByUsername
+);
 privateRouter.put("/api/users", userController.update);
 privateRouter.get("/api/users/wallet", userController.wallet);
 privateRouter.get("/api/users/withdrawals", userController.withdrawal);
 privateRouter.post("/api/users/withdrawals", userController.requestWithdrawal);
+privateRouter.delete(
+  "/api/users/:id",
+  adminOnlyMiddleware,
+  userController.deleteUser
+);
+
 privateRouter.get(
   "/api/users/withdrawals/:id/accept",
   staffOnlyMiddleware,

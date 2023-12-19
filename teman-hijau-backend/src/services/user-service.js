@@ -22,7 +22,7 @@ const register = async (request) => {
   });
 
   if (countUser) {
-    throw new ResponseError(400, "Username telah digunakan.");
+    throw new ResponseError(400, "Username atau Email telah digunakan.");
   }
 
   user.password = await bcrypt.hash(user.password, 10);
@@ -57,9 +57,8 @@ const register = async (request) => {
       password: user.password,
       role_id: user.role_id,
     },
-    select: {
-      username: true,
-      role_id: true,
+    include: {
+      role: true,
     },
   });
 };
@@ -130,6 +129,81 @@ const update = async (user, req) => {
     where: { username: user.username },
     data: data,
   });
+};
+
+const updateByUsername = async (username, req) => {
+  const data = validate(updateUservalidation, req);
+
+  const authBody = {};
+  if (data.password) {
+    data.password = await bcrypt.hash(data.password, 10);
+    authBody.password = data.password;
+  }
+  if (data.role_id) {
+    authBody.role_id = data.role_id;
+  }
+
+  if (authBody) {
+    await prismaClient.authentication.update({
+      where: { username: username },
+      data: authBody,
+    });
+
+    delete data.password;
+    delete data.role_id;
+  }
+
+  return prismaClient.user.update({
+    where: { username: username },
+    data: data,
+  });
+};
+
+const deleteUser = async (username) => {
+  await prismaClient.authentication.delete({ where: { username: username } });
+  await prismaClient.wallet.delete({ where: { username: username } });
+  await prismaClient.user.delete({ where: { username: username } });
+
+  return { status: "success" };
+};
+
+const fetchAll = async () => {
+  const auth = await prismaClient.authentication.findMany({
+    where: {
+      deleted_at: null,
+    },
+    orderBy: {
+      created_at: "desc",
+    },
+    select: {
+      username: true,
+      role: true,
+    },
+  });
+
+  const result = await Promise.all(
+    auth.map(async (user) => {
+      const profile = await prismaClient.user.findUnique({
+        where: { username: user.username },
+        select: {
+          first_name: true,
+          last_name: true,
+          phone: true,
+          email: true,
+        },
+      });
+      return {
+        ...user,
+        ...profile,
+      };
+    })
+  );
+
+  return result;
+};
+
+const roles = async (user) => {
+  return prismaClient.role.findMany();
 };
 
 const fetch = async (user) => {
@@ -335,7 +409,11 @@ export default {
   register,
   login,
   fetch,
+  roles,
+  fetchAll,
   update,
+  updateByUsername,
+  deleteUser,
   wallet,
   withdrawal,
   requestWithdrawal,

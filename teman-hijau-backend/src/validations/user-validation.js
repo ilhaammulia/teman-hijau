@@ -18,6 +18,7 @@ const updateUservalidation = Joi.object({
   email: Joi.string().max(100).optional(),
   address: Joi.string().optional(),
   phone: Joi.string().max(20).optional(),
+  role_id: Joi.string().max(20).optional(),
 });
 
 const loginUserValidation = Joi.object({

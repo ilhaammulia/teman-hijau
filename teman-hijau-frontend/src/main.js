@@ -109,6 +109,7 @@ import axios from 'axios';
 
 axios.defaults.withCredentials = true;
 axios.defaults.headers.common['Authorization'] = `Bearer ${store.getters.getToken}`;
+axios.defaults.baseURL = import.meta.env.VITE_BASE_API;
 
 const app = createApp(App);
 

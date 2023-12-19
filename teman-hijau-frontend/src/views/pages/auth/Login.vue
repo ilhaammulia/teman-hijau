@@ -73,7 +73,7 @@ export default {
         async login(e) {
             e.preventDefault();
             try {
-                const response = await axios(`${import.meta.env.VITE_BASE_API}/users/login`, {
+                const response = await axios(`/users/login`, {
                     method: "POST",
                     data: {
                         username: this.username,

@@ -99,13 +99,7 @@ const updateGarbage = async (garbageId, request) => {
   return prismaClient.garbage.update({
     where: { id: garbage.id },
     data: data,
-    select: {
-      name: true,
-      unit: true,
-      buy_price: true,
-      sell_price: true,
-      stock: true,
-      created_at: true,
+    include: {
       category: true,
     },
   });

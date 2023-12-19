@@ -1,4 +1,6 @@
 <script>
+import axios from 'axios';
+
 export default {
   data() {
     return {
@@ -14,29 +16,23 @@ export default {
     async register(e) {
       e.preventDefault()
 
-      const response = await fetch(`${import.meta.env.VITE_BASE_API}/users`, {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-        },
-        body: JSON.stringify({
+      try {
+        const response = await axios.post(`/users`, {
           first_name: this.first_name,
           last_name: this.last_name,
           email: this.email,
           username: this.username,
           password: this.password,
           role_id: "user"
-        })
-      });
+        });
 
-      const {data= {}, errors = ""} = await response.json();
+        this.$toast.add({ severity: 'success', summary: 'Request Success', detail: 'Registrasi berhasil.', life: 3000 });
 
-      if (errors) {
+        this.$router.push({ name: 'auth.login' });
+      } catch (error) {
+        const {errors} = error.response.data;
         this.errors = errors;
-        return;
       }
-
-      this.$router.push({ name: 'auth.login' });
     }
   }
 }

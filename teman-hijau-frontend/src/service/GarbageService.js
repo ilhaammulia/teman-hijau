@@ -3,7 +3,15 @@ import axios from 'axios';
 
 export default class GarbageService {
     getGarbages() {
-        return axios(`${import.meta.env.VITE_BASE_API}/garbages`, {
+        return axios(`/garbages`, {
+            method: 'GET',
+            headers: {
+                authorization: `Bearer ${store.getters.getToken}`
+            }
+        }).then((res) => res.data);
+    }
+    getCategories() {
+        return axios(`/garbages/categories`, {
             method: 'GET',
             headers: {
                 authorization: `Bearer ${store.getters.getToken}`
