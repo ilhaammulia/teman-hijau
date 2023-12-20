@@ -75,7 +75,7 @@ const createTransaction = async (user, request) => {
     throw new ResponseError(400, "Stok sampah tidak memenuhi.");
 
   data.id = id;
-  data.staff_id = user.id;
+  data.staff_id = user.username;
   data.total_price = garbage.sell_price * data.qty;
 
   return prismaClient.collectorTransaction.create({

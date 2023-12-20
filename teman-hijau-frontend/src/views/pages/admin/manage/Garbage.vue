@@ -63,6 +63,9 @@ export default {
           this.garbages.splice(this.garbages.indexOf(garbage), 1);
         } catch (error) {}
       });
+      if (this.removedGarbages.length) {
+        this.$toast.add({ severity: 'success', summary: 'Request Success', detail: 'Data sampah telah dihapus.', life: 3000 });
+      }
       this.removedGarbages = [];
     },
     async onRowEditSave(event) {
@@ -104,11 +107,13 @@ export default {
     async submitProduct(e) {
       e.preventDefault();
 
-      if (isNaN(this.productForm.category)) {
+      if (typeof this.productForm.category !== 'object') {
         const resp = await axios.post(`/garbages/categories`, {
           name: this.productForm.category
         });
         this.productForm.category = resp.data.data.id;
+      } else {
+        this.productForm.category = this.productForm.category.code;
       }
 
       try {

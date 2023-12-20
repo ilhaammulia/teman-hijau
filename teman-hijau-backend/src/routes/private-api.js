@@ -31,6 +31,12 @@ privateRouter.put(
 privateRouter.put("/api/users", userController.update);
 privateRouter.get("/api/users/wallet", userController.wallet);
 privateRouter.get("/api/users/withdrawals", userController.withdrawal);
+privateRouter.get(
+  "/api/users/withdrawals/all",
+  staffOnlyMiddleware,
+  userController.allWithdrawals
+);
+
 privateRouter.post("/api/users/withdrawals", userController.requestWithdrawal);
 privateRouter.delete(
   "/api/users/:id",
@@ -46,7 +52,13 @@ privateRouter.get(
 privateRouter.get(
   "/api/users/withdrawals/:id/reject",
   staffOnlyMiddleware,
-  userController.acceptWithdrawal
+  userController.rejectWithdrawal
+);
+
+privateRouter.get(
+  "/api/users/transactions/all",
+  staffOnlyMiddleware,
+  userController.allTransactions
 );
 
 privateRouter.post(
@@ -92,7 +104,7 @@ privateRouter.use("/api/collectors", staffOnlyMiddleware);
 privateRouter.post("/api/collectors", collectorController.createCollector);
 privateRouter.get("/api/collectors", collectorController.collectors);
 privateRouter.post(
-  "/api/collectors/transaction",
+  "/api/collectors/transactions",
   collectorController.createTransaction
 );
 privateRouter.put("/api/collectors/:id", collectorController.updateCollector);

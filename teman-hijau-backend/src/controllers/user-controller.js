@@ -111,6 +111,15 @@ const withdrawal = async (req, res, next) => {
   }
 };
 
+const allWithdrawals = async (req, res, next) => {
+  try {
+    const usersWithdrawal = await userService.allWithdrawals(req.user);
+    res.status(200).json({ data: usersWithdrawal });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const requestWithdrawal = async (req, res, next) => {
   try {
     const withdraw = await userService.requestWithdrawal(req.user, req.body);
@@ -139,6 +148,15 @@ const rejectWithdrawal = async (req, res, next) => {
       req.params.id
     );
     res.status(200).json({ data: withdraw });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const allTransactions = async (req, res, next) => {
+  try {
+    const transactions = await userService.allTransactions();
+    res.status(200).json({ data: transactions });
   } catch (error) {
     next(error);
   }
@@ -182,7 +200,9 @@ export default {
   deleteUser,
   wallet,
   withdrawal,
+  allWithdrawals,
   requestWithdrawal,
+  allTransactions,
   createTransaction,
   acceptTransaction,
   rejectTransaction,

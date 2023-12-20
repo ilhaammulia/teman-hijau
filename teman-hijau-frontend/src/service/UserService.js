@@ -26,6 +26,14 @@ export default class UserService {
             }
         }).then((res) => res.data);
     }
+    getAllWithdrawals() {
+        return axios(`/users/withdrawals/all`, {
+            method: 'GET',
+            headers: {
+                authorization: `Bearer ${store.getters.getToken}`
+            }
+        }).then((res) => res.data);
+    }
     getUsers() {
         return axios(`/users/all`, {
             method: 'GET',
@@ -34,9 +42,16 @@ export default class UserService {
             }
         }).then((res) => res.data);
     }
-
     getRoles() {
         return axios(`/users/roles`, {
+            method: 'GET',
+            headers: {
+                authorization: `Bearer ${store.getters.getToken}`
+            }
+        }).then((res) => res.data);
+    }
+    getAllTransactions() {
+        return axios(`/users/transactions/all`, {
             method: 'GET',
             headers: {
                 authorization: `Bearer ${store.getters.getToken}`

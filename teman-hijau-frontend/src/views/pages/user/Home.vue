@@ -160,7 +160,8 @@ export default {
               <div class="flex align-items-center gap-2">
                 Rp{{ data.amount }}
               </div>
-            </template></Column>
+            </template>
+          </Column>
           <Column field="status" header="Status" :sortable="true">
             <template #body="{ data }">
               <div class="flex align-items-center gap-2">

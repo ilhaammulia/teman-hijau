@@ -59,6 +59,9 @@ export default {
           this.users.splice(this.users.indexOf(user), 1);
         } catch (error) { }
       });
+      if (this.removedUsers.length) {
+        this.$toast.add({ severity: 'success', summary: 'Request Success', detail: 'Data user telah dihapus.', life: 3000 });
+      }
       this.removedUsers = [];
     },
     async onRowEditSave(event) {
@@ -71,20 +74,28 @@ export default {
       }
 
       try {
-        await axios.put(`/users/${newData.username}`, 
-        {
+
+        const body = {
             first_name: newData.first_name,
             last_name: newData.last_name,
             email: newData.email,
             phone: newData.phone,
             role_id: newData.role.id
-        });
+        };
+
+        if (this.$store.getters.getUser.username == newData.username && this.users[index].role.id == "admin") {
+          delete body.role_id;
+          newData.role = this.users[index].role
+        }
+
+        await axios.put(`/users/${newData.username}`, Object.fromEntries(Object.entries(body).filter(([_, value]) => !!value)));
 
         this.users[index] = newData;
 
         this.$toast.add({ severity: 'success', summary: 'Request Success', detail: 'Data user telah diubah.', life: 3000 });
       } catch (error) {
-        this.$toast.add({ severity: 'error', summary: 'Request Failed', detail: error, life: 3000 });
+        const { errors } = error.response?.data;
+        this.$toast.add({ severity: 'error', summary: 'Request Failed', detail: errors, life: 3000 })
       }
     },
     async submitUser(e) {
@@ -101,6 +112,12 @@ export default {
             role_id: this.userForm.role_id.code
           });
 
+        const { data } = response.data;
+        data.first_name = this.userForm.first_name;
+        data.last_name = this.userForm.last_name;
+        data.email = this.userForm.email;
+        this.users.unshift(data);
+
         this.userForm = {
           first_name: null,
           last_name: null,
@@ -111,9 +128,6 @@ export default {
         };
 
         this.addUserModal = false;
-
-        const { data } = response.data;
-        this.users.unshift(data);
         this.$toast.add({ severity: 'success', summary: 'Request Success', detail: 'Data user telah ditambahkan.', life: 3000 });
       } catch (error) {
         const { errors } = error.response?.data;
@@ -174,9 +188,9 @@ export default {
             <span class="block text-500 font-medium mb-3">Users</span>
             <div class="text-900 font-medium text-xl">{{ users.length }}</div>
           </div>
-          <div class="flex align-items-center justify-content-center bg-teal-100 border-round"
+          <div class="flex align-items-center justify-content-center bg-yellow-100 border-round"
             style="width: 2.5rem; height: 2.5rem">
-            <i class="pi pi-box text-teal-500 text-xl"></i>
+            <i class="pi pi-users text-yellow-500 text-xl"></i>
           </div>
         </div>
         <div class="flex items-align-center underline">
@@ -192,9 +206,9 @@ export default {
             <span class="block text-500 font-medium mb-3">Staff</span>
             <div class="text-900 font-medium text-xl">{{ currentStaff }}</div>
           </div>
-          <div class="flex align-items-center justify-content-center bg-blue-100 border-round"
+          <div class="flex align-items-center justify-content-center bg-red-100 border-round"
             style="width: 2.5rem; height: 2.5rem">
-            <i class="pi pi-database text-blue-500 text-xl"></i>
+            <i class="pi pi-verified text-red-500 text-xl"></i>
           </div>
         </div>
         <span class="text-500">Last updated </span>

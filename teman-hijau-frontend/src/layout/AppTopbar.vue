@@ -5,6 +5,7 @@ import { useStore } from 'vuex';
 import { useRouter } from 'vue-router';
 import UserService from '../service/UserService';
 import axios from 'axios';
+import { useToast } from 'primevue/usetoast';
 
 const { layoutConfig, onMenuToggle } = useLayout();
 
@@ -14,6 +15,7 @@ const isProfileOpen = ref(false);
 const store = useStore();
 const router = useRouter();
 const form = ref(null);
+const toast = useToast();
 
 onMounted(() => {
     const userService = new UserService();
@@ -83,9 +85,11 @@ const updateUser = async (e) => {
         address: form.value.address 
     };
 
-    await axios.put(`${import.meta.env.VITE_BASE_API}/users`, Object.fromEntries(
+    await axios.put(`/users`, Object.fromEntries(
         Object.entries(body).filter(([_, value]) => !!value)
     ));
+
+    toast.add({ severity: 'success', summary: 'Request Success', detail: 'Data user telah diubah.', life: 3000 });
 
     isProfileOpen.value = false;
 

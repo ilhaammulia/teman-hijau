@@ -3,7 +3,7 @@ import supertest from "supertest";
 import { logger } from "../../src/applications/logging.js";
 import { web } from "../../src/applications/web.js";
 
-describe("/api/collectors/transaction", () => {
+describe("/api/collectors/transactions", () => {
   beforeAll(() => {
     logger.silent = true;
   });
@@ -94,7 +94,7 @@ describe("/api/collectors/transaction", () => {
     });
 
     const result = await supertest(web)
-      .post("/api/collectors/transaction")
+      .post("/api/collectors/transactions")
       .set("Authorization", `Bearer ${login.body.data.access_token}`)
       .send({
         garbage_id: garbage.id,
@@ -122,7 +122,7 @@ describe("/api/collectors/transaction", () => {
     });
 
     const result = await supertest(web)
-      .post("/api/collectors/transaction")
+      .post("/api/collectors/transactions")
       .set("Authorization", `Bearer ${login.body.data.access_token}`)
       .send({
         garbage_id: garbage.id,

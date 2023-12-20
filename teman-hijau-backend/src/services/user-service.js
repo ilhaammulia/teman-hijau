@@ -257,6 +257,16 @@ const withdrawal = async (user) => {
   });
 };
 
+const allWithdrawals = async () => {
+  return prismaClient.userWithdrawal.findMany({
+    orderBy: { created_at: "desc" },
+    include: {
+      user: true,
+      staff: true,
+    },
+  });
+};
+
 const requestWithdrawal = async (user, request) => {
   const data = validate(withdrawalUserValidation, request);
   const id = generateRandomId("WD");
@@ -292,7 +302,7 @@ const requestWithdrawal = async (user, request) => {
 
 const acceptWithdrawal = async (user, withdrawId) => {
   const withdraw = await prismaClient.userWithdrawal.findUnique({
-    where: { id: withdrawId },
+    where: { id: withdrawId, status: "PENDING" },
   });
 
   if (!withdraw)
@@ -301,9 +311,12 @@ const acceptWithdrawal = async (user, withdrawId) => {
   const currentWithdraw = await prismaClient.userWithdrawal.update({
     data: {
       status: "ACCEPTED",
-      staff_id: user.id,
+      staff_id: user.username,
     },
     where: { id: withdrawId },
+    include: {
+      staff: true,
+    },
   });
 
   return currentWithdraw;
@@ -311,7 +324,7 @@ const acceptWithdrawal = async (user, withdrawId) => {
 
 const rejectWithdrawal = async (user, withdrawId) => {
   const withdraw = await prismaClient.userWithdrawal.findUnique({
-    where: { id: withdrawId },
+    where: { id: withdrawId, status: "PENDING" },
   });
 
   if (!withdraw)
@@ -327,12 +340,86 @@ const rejectWithdrawal = async (user, withdrawId) => {
   const currentWithdraw = await prismaClient.userWithdrawal.update({
     data: {
       status: "REJECTED",
-      staff_id: user.id,
+      staff_id: user.username,
     },
     where: { id: withdrawId },
+    include: {
+      staff: true,
+    },
   });
 
   return currentWithdraw;
+};
+
+const allTransactions = async () => {
+  const getUserTransactionsWithType = async () => {
+    const userTransactions = await prismaClient.userTransaction.findMany({
+      orderBy: {
+        created_at: "desc",
+      },
+      include: {
+        garbage: true,
+        user: true,
+        staff: true,
+      },
+    });
+    return userTransactions.map((transaction) => ({
+      ...transaction,
+      type: "user",
+    }));
+  };
+
+  const getCollectorTransactionsWithType = async () => {
+    const collectorTransactions =
+      await prismaClient.collectorTransaction.findMany({
+        orderBy: {
+          created_at: "desc",
+        },
+        include: {
+          garbage: true,
+          collector: true,
+          staff: true,
+        },
+      });
+    return collectorTransactions.map((transaction) => ({
+      ...transaction,
+      type: "collector",
+    }));
+  };
+
+  const [userTransactionsWithType, collectorTransactionsWithType] =
+    await Promise.all([
+      getUserTransactionsWithType(),
+      getCollectorTransactionsWithType(),
+    ]);
+
+  const transactions = [
+    ...userTransactionsWithType,
+    ...collectorTransactionsWithType,
+  ].sort((a, b) => (a.created_at > b.created_at ? -1 : 1));
+  const userTx = await prismaClient.userTransaction.aggregate({
+    where: {
+      status: "ACCEPTED",
+    },
+    _sum: {
+      total_price: true,
+    },
+  });
+
+  const collectorTx = await prismaClient.collectorTransaction.aggregate({
+    where: {
+      status: "ACCEPTED",
+    },
+    _sum: {
+      total_price: true,
+    },
+  });
+
+  return {
+    revenue:
+      (collectorTx._sum.total_price ?? 0) - (userTx._sum.total_price ?? 0),
+    transactions: transactions,
+  };
 };
 
 const createTransaction = async (user, request) => {
@@ -346,11 +433,16 @@ const createTransaction = async (user, request) => {
   if (!garbage) throw new ResponseError(404, "Data sampah tidak ditemukan.");
 
   data.id = id;
-  data.staff_id = user.id;
+  data.staff_id = user.username;
   data.total_price = garbage.buy_price * data.qty;
 
   return prismaClient.userTransaction.create({
     data: data,
+    include: {
+      garbage: true,
+      user: true,
+      staff: true,
+    },
   });
 };
 
@@ -416,9 +508,11 @@ export default {
   deleteUser,
   wallet,
   withdrawal,
+  allWithdrawals,
   requestWithdrawal,
   acceptWithdrawal,
   rejectWithdrawal,
+  allTransactions,
   createTransaction,
   acceptTransaction,
   rejectTransaction,
