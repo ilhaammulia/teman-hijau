@@ -52,7 +52,7 @@ export default {
               <span class="text-600 font-medium">Start managing garbage smarter. Sign up now to get started.</span>
             </div>
 
-            <div v-if="errors" class="py-2">
+            <div v-if="errors" class="py-2 w-25rem">
                 <small class="text-red-500">{{ errors }}</small>
             </div>
 

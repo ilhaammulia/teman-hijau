@@ -11,7 +11,7 @@
                             <span class="text-600 font-medium">Sign in to continue</span>
                         </div>
 
-                        <div v-if="errors" class="py-2">
+                        <div v-if="errors" class="py-2 w-25rem">
                             <small class="text-red-500">{{ errors }}</small>
                         </div>
 
