@@ -1,12 +1,14 @@
 <script>
 import UserService from '../../../../service/UserService';
 import GarbageService from '../../../../service/GarbageService';
+import CollectorService from '../../../../service/CollectorService';
 import moment from 'moment';
 import { FilterMatchMode } from 'primevue/api';
 import axios from 'axios';
 
 const userService = new UserService();
 const garbageService = new GarbageService();
+const collectorService = new CollectorService();
 
 export default {
   data() {
@@ -38,6 +40,10 @@ export default {
       this.users = data.map(({...user}) => ({type: 'user', ...user}));
       this.currentOptions.push({data: this.users.map(({...rest}) => ({name: `${rest.first_name} ${rest.last_name}`, ...rest})) , type: 'User'});
     });
+    collectorService.getCollectors().then(({ data }) => {
+      this.collectors = data.map(({...collector}) => ({type: 'collector', ...collector}));
+      this.currentOptions.push({data: this.collectors.map(({...rest}) => ({...rest})) , type: 'Collector'});
+    });
     garbageService.getGarbages().then(({ data }) => {
       this.garbages = data;
     });
@@ -63,7 +69,8 @@ export default {
         this.transactionForm.user_id = this.transactionForm.user_id.username;
       } else {
         url = '/collectors/transactions'
-        this.transactionForm.user_id = this.transactionForm.user_id.id;
+        this.transactionForm.collector_id = this.transactionForm.user_id.id;
+        delete this.transactionForm.user_id;
       }
 
       this.addTransactionModal = false;
@@ -95,6 +102,12 @@ export default {
         await axios.get(url);
         const index = this.transactions.transactions.indexOf(data);
         this.transactions.transactions[index].status = 'ACCEPTED';
+        if (data.hasOwnProperty('collector')) {
+          this.transactions.revenue += parseFloat(this.transactions.transactions[index].total_price);
+        } else {
+          this.transactions.revenue -= parseFloat(this.transactions.transactions[index].total_price);
+        }
+
         this.$toast.add({ severity: 'success', summary: 'Request Success', detail: "Data transaksi telah disetujui.", life: 3000 });
       } catch (error) {
         const { errors } = error.response?.data;
@@ -155,7 +168,18 @@ export default {
       <div class="flex flex-column sm:flex-row justify-content-between align-items-center sm:gap-4">
         <div class="w-full">
           <label for="email" class="block text-900 text-xl font-medium mb-2">Sampah</label>
-          <Dropdown class="w-full mb-5 p-1" v-model="transactionForm.garbage_id" :options="garbages" optionLabel="name" placeholder="Select garbage"></Dropdown>
+          <Dropdown class="w-full mb-5 p-1" v-model="transactionForm.garbage_id" :options="garbages" optionLabel="name" placeholder="Select garbage">
+            <template #value="slotProps">
+              <div v-if="slotProps.value" class="flex align-items-center">
+                <div>{{ slotProps.value.name }} ({{ slotProps.value.stock }} {{ slotProps.value.unit }})</div>
+              </div>
+            </template>
+            <template #option="slotProps">
+              <div class="flex align-items-center">
+                <div>{{ slotProps.option.name }} ({{ slotProps.option.stock }} {{ slotProps.option.unit }})</div>
+              </div>
+            </template>
+          </Dropdown>
         </div>
         <div class="w-full">
           <label for="username" class="block text-900 text-xl font-medium mb-2">Quantity</label>

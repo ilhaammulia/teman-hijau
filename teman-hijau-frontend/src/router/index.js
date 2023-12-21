@@ -14,20 +14,12 @@ const routes = [
             const user = store.getters.getUser;
 
             if (user && user.role !== 'user') {
-                return { name: 'admin.dashboard' };
+                return { name: 'admin.manage.garbage' };
             }
 
             return { name: 'home' };
         },
         children: [
-            {
-                path: 'dashboard',
-                name: 'admin.dashboard',
-                meta: {
-                    title: 'Dashboard'
-                },
-                component: () => import('@/views/pages/admin/Dashboard.vue')
-            },
             {
                 path: 'manage/garbage',
                 name: 'admin.manage.garbage',
@@ -115,7 +107,7 @@ const routes = [
             if (user && user.role == 'user') {
                 return { name: 'user.home' };
             } else if (user && user.role !== 'user') {
-                return { name: 'admin.dashboard' };
+                return { name: 'admin.manage.garbage' };
             } else {
                 return { name: 'home' };
             }
@@ -132,10 +124,12 @@ const routes = [
             {
                 path: 'login',
                 name: 'auth.login',
-                beforeEach: (to) => {
+                beforeEnter: (to, from, next) => {
                     const isAuthenticated = store.getters.isAuthenticated;
                     if (isAuthenticated) {
-                        return { name: 'home' };
+                        return next({ name: 'home' });
+                    } else {
+                        next();
                     }
                 },
                 component: () => import('@/views/pages/auth/Login.vue')
@@ -143,10 +137,12 @@ const routes = [
             {
                 path: 'register',
                 name: 'auth.register',
-                beforeEach: (to) => {
+                beforeEnter: (to, from, next) => {
                     const isAuthenticated = store.getters.isAuthenticated;
                     if (isAuthenticated) {
-                        return { name: 'home' };
+                        return next({ name: 'home' });
+                    } else {
+                        next();
                     }
                 },
                 component: () => import('@/views/pages/auth/Register.vue')
@@ -162,6 +158,30 @@ const routes = [
         path: '/auth/error',
         name: 'error',
         component: () => import('@/views/pages/auth/Error.vue')
+    },
+    {
+        path: '/articles',
+        name: 'articles',
+        redirect: (to) => {
+            return { name: 'home' };
+        },
+        children: [
+            {
+                path: 'cara-pengelolaan-sampah-sampahku-tanggung-jawabku',
+                name: 'articles.page.1',
+                component: () => import('@/views/pages/articles/Article1.vue')
+            },
+            {
+                path: 'pilah-sampah-dari-rumah-yuk',
+                name: 'articles.page.2',
+                component: () => import('@/views/pages/articles/Article2.vue')
+            },
+            {
+                path: 'pengolahan-sampah-organik',
+                name: 'articles.page.3',
+                component: () => import('@/views/pages/articles/Article3.vue')
+            }
+        ]
     }
 ];
 

@@ -238,7 +238,7 @@ const fetch = async (user) => {
     profile_photo: fetched.profile_photo,
     transactions: fetched.UserTransaction,
     pending_balance: {
-      balance: pendingBalance,
+      balance: pendingBalance ?? 0,
       updated_at: null,
     },
   };
@@ -255,6 +255,9 @@ const wallet = async (user) => {
 const withdrawal = async (user) => {
   return prismaClient.userWithdrawal.findMany({
     where: { user_id: user.username },
+    include: {
+      staff: true,
+    },
     orderBy: { created_at: "desc" },
   });
 };
@@ -456,27 +459,39 @@ const acceptTransaction = async (transactionId) => {
   if (!transaction)
     throw new ResponseError(404, "Data transaksi tidak ditemukan.");
 
-  const [currentTransaction, updatedWallet, updatedGarbage] =
-    await prismaClient.$transaction([
-      prismaClient.userTransaction.update({
-        data: {
-          status: "ACCEPTED",
-        },
-        where: { id: transactionId },
-      }),
-      prismaClient.wallet.update({
-        data: {
-          balance: { increment: transaction.total_price },
-        },
-        where: { username: transaction.user_id },
-      }),
-      prismaClient.garbage.update({
-        data: {
-          stock: { increment: transaction.qty },
-        },
-        where: { id: transaction.garbage_id },
-      }),
-    ]);
+  const organization = await prismaClient.organization.findFirst();
+
+  const [
+    currentTransaction,
+    updatedWallet,
+    updatedGarbage,
+    updateOrganization,
+  ] = await prismaClient.$transaction([
+    prismaClient.userTransaction.update({
+      data: {
+        status: "ACCEPTED",
+      },
+      where: { id: transactionId },
+    }),
+    prismaClient.wallet.update({
+      data: {
+        balance: { increment: transaction.total_price },
+      },
+      where: { username: transaction.user_id },
+    }),
+    prismaClient.garbage.update({
+      data: {
+        stock: { increment: transaction.qty },
+      },
+      where: { id: transaction.garbage_id },
+    }),
+    prismaClient.organization.update({
+      where: { id: organization.id },
+      data: {
+        balance: { decrement: transaction.total_price },
+      },
+    }),
+  ]);
 
   return currentTransaction;
 };

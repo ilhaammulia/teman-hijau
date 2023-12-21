@@ -57,10 +57,30 @@ const createTransaction = async (req, res, next) => {
   }
 };
 
+const acceptTransaction = async (req, res, next) => {
+  try {
+    const updated = await collectorService.acceptTransaction(req.params.id);
+    res.status(200).json({ data: updated });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const rejectTransaction = async (req, res, next) => {
+  try {
+    const updated = await collectorService.rejectTransaction(req.params.id);
+    res.status(200).json({ data: updated });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export default {
   createCollector,
   collectors,
   updateCollector,
   deleteCollector,
   createTransaction,
+  acceptTransaction,
+  rejectTransaction,
 };

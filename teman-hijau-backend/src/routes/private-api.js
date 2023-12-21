@@ -7,6 +7,7 @@ import {
 import userController from "../controllers/user-controller.js";
 import garbageController from "../controllers/garbage-controller.js";
 import collectorController from "../controllers/collector-controller.js";
+import organizationController from "../controllers/organization-controller.js";
 
 const privateRouter = new express.Router();
 privateRouter.use(verifyAuthMiddleware);
@@ -111,6 +112,28 @@ privateRouter.put("/api/collectors/:id", collectorController.updateCollector);
 privateRouter.delete(
   "/api/collectors/:id",
   collectorController.deleteCollector
+);
+privateRouter.get(
+  "/api/collectors/transactions/:id/accept",
+  adminOnlyMiddleware,
+  collectorController.acceptTransaction
+);
+privateRouter.get(
+  "/api/collectors/transactions/:id/reject",
+  adminOnlyMiddleware,
+  collectorController.rejectTransaction
+);
+
+privateRouter.use("/api/organizations", staffOnlyMiddleware);
+privateRouter.get("/api/organizations", organizationController.fetch);
+privateRouter.put("/api/organizations/:id", organizationController.update);
+privateRouter.get(
+  "/api/organizations/cashout",
+  organizationController.cashouts
+);
+privateRouter.post(
+  "/api/organizations/cashout",
+  organizationController.createCashout
 );
 
 export { privateRouter };

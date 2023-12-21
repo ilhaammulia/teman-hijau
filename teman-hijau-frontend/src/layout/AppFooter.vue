@@ -12,12 +12,14 @@ const logoUrl = computed(() => {
 <template>
     <div class="layout-footer">
         <div class="flex flex-wrap gap-2">
-            <Button type="button" class="github">
-                <span class="flex align-items-center px-2 bg-bluegray-800 text-white">
-                    <i className="pi pi-github"></i>
-                </span>
-                <span className="px-3 py-2 flex align-items-center text-white">Github</span>
-            </Button>
+            <a href="https://github.com/ilhaammulia/teman-hijau" target="_blank">
+                <Button @click="" type="button" class="github">
+                    <span class="flex align-items-center px-2 bg-bluegray-800 text-white">
+                        <i className="pi pi-github"></i>
+                    </span>
+                    <span className="px-3 py-2 flex align-items-center text-white">Github</span>
+                </Button>
+            </a>
         </div>
     </div>
 </template>
