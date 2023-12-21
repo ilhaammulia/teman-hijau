@@ -223,6 +223,11 @@ const fetch = async (user) => {
       },
     },
   });
+  const pendingBalance = fetched.UserTransaction.reduce((prev, curr) => {
+    if (curr.status == "PENDING") {
+      return (prev += parseFloat(curr.total_price));
+    }
+  }, 0);
 
   return {
     first_name: fetched.first_name,
@@ -231,12 +236,9 @@ const fetch = async (user) => {
     address: fetched.address,
     phone: fetched.phone,
     profile_photo: fetched.profile_photo,
+    transactions: fetched.UserTransaction,
     pending_balance: {
-      balance: fetched.UserTransaction.reduce((prev, curr) => {
-        if (curr.status == "PENDING") {
-          prev += curr.total_price;
-        }
-      }, 0),
+      balance: pendingBalance,
       updated_at: null,
     },
   };

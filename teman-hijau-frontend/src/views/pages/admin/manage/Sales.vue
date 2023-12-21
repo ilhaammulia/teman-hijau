@@ -36,7 +36,7 @@ export default {
     });
     userService.getUsers().then(({ data }) => {
       this.users = data.map(({...user}) => ({type: 'user', ...user}));
-      this.currentOptions.push({data: this.users, type: 'User'});
+      this.currentOptions.push({data: this.users.map(({...rest}) => ({name: `${rest.first_name} ${rest.last_name}`, ...rest})) , type: 'User'});
     });
     garbageService.getGarbages().then(({ data }) => {
       this.garbages = data;
@@ -134,13 +134,10 @@ export default {
         </div>
         <div class="w-full">
           <label for="user" class="block text-900 text-xl font-medium mb-2">User</label>
-          <Dropdown v-model="transactionForm.user_id" :options="selectedOption.data" filter :optionLabel="currentOptions.type == 'User' ? 'first_name' : 'name'"
+          <Dropdown v-model="transactionForm.user_id" :options="selectedOption.data" filter optionLabel="name"
             placeholder="Select user" class="w-full p-1 mb-5">
             <template #value="slotProps">
-              <div v-if="slotProps.value && selectedOption.type == 'User'" class="flex align-items-center">
-                <div>{{ slotProps.value.first_name }} {{ slotProps.value.last_name }}</div>
-              </div>
-              <div v-else-if="slotProps.value && selectedOption.type == 'Collector'" class="flex align-items-center">
+              <div v-if="slotProps.value" class="flex align-items-center">
                 <div>{{ slotProps.value.name }}</div>
               </div>
               <div v-else>
@@ -149,7 +146,7 @@ export default {
             </template>
             <template #option="slotProps">
               <div class="flex align-items-center">
-                <div>{{ slotProps.option.first_name }} {{ slotProps.option.last_name }}</div>
+                <div>{{ slotProps.option.name }}</div>
               </div>
             </template>
           </Dropdown>

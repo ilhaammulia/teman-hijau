@@ -13,6 +13,7 @@ export default {
       amount: 10000,
       wallet: null,
       withdrawals: null,
+      transactions: [],
       transactionFilter: {
         global: { value: null, matchMode: FilterMatchMode.CONTAINS },
       },
@@ -29,10 +30,12 @@ export default {
       userService.getWallet().then(({ data }) => {
           this.wallet = data;
         });
-
-        userService.getWithdrawals().then(({ data }) => {
-          this.withdrawals = data;
-        });
+      userService.getWithdrawals().then(({ data }) => {
+        this.withdrawals = data;
+      });
+    },
+    formatCurrency(value) {
+      return String(value).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' });
     },
     parseDate(date) {
       if (date) {
@@ -171,12 +174,11 @@ export default {
               </div>
             </template>
           </Column>
-          <Column field="staff.first_name" header="Accepted By">
+          <Column field="staff" header="Accepted By">
             <template #body="{ data }">
               <div class="flex align-items-center gap-2">
-                <img v-if="data.staff?.profile_photo" alt="Profile photo" :src="data.staff?.profile_photo"
-                  style="width: 32px" />
-                <span>{{ data.staff?.first_name }}</span>
+                <img v-if="data.staff?.profile_photo" alt="Profile photo" :src="data.staff.profile_photo" style="width: 32px" />
+                <span>{{ data.staff?.first_name }} {{ data.staff?.last_name }}</span>
               </div>
             </template>
           </Column>
@@ -197,22 +199,41 @@ export default {
           <h5>Transactions</h5>
           <span class="p-input-icon-left">
             <i class="pi pi-search" />
-            <InputText class="w-full" placeholder="Keyword Search" />
+            <InputText v-model="transactionFilter['global'].value" class="w-full" placeholder="Keyword Search" />
           </span>
         </div>
         <DataTable v-model:filters="transactionFilter"
-          :globalFilterFields="['garbage.name', 'qty', 'total_price', 'status']" dataKey="id"
+          :globalFilterFields="['garbage.name', 'qty', 'total_price', 'status']" :value="$store.getters.getProfile?.transactions" dataKey="id"
            :rows="8" :paginator="true" responsiveLayout="scroll">
+          <Column field="id" header="ID" sortable></Column>
           <Column field="garbage.name" header="Garbage" sortable></Column>
           <Column field="qty" header="Qty" :sortable="true"></Column>
-          <Column field="total_price" header="Total Price" :sortable="true"></Column>
-          <Column field="status" header="Status" :sortable="true"></Column>
-          <Column field="staff.first_name" header="Accepted By">
+          <Column field="total_price" header="Total Price" :sortable="true">
+            <template #body="slotProps">
+              Rp{{ formatCurrency(slotProps.data.total_price) }}
+            </template>
+          </Column>
+          <Column field="status" header="Status" :sortable="true">
+            <template #body="{data}">
+              <div class="flex align-items-center gap-2">
+                <Tag v-if="data.status == 'ACCEPTED'" icon="pi pi-check" severity="success" value="Accepted"></Tag>
+                <Tag v-if="data.status == 'PENDING'" icon="pi pi-clock" severity="warning" value="Pending"></Tag>
+                <Tag v-if="data.status == 'REJECTED'" icon="pi pi-times" severity="danger" value="Rejected"></Tag>
+              </div>
+            </template>
+          </Column>
+          <Column field="staff" header="Requested By">
             <template #body="{ data }">
               <div class="flex align-items-center gap-2">
-                <img alt="Profile photo" :src="`https://primefaces.org/cdn/primevue/images/avatar/onyamalimba.png`"
-                  style="width: 32px" />
-                <span>{{ data.name }}</span>
+                <img v-if="data.staff?.profile_photo" alt="Profile photo" :src="data.staff.profile_photo" style="width: 32px" />
+                <span>{{ data.staff?.first_name }} {{ data.staff?.last_name }}</span>
+              </div>
+            </template>
+          </Column>
+          <Column field="created_at" header="Created At" :sortable="true">
+            <template #body="{ data }">
+              <div class="flex align-items-center gap-2">
+                {{ parseDate(data.created_at) }}
               </div>
             </template>
           </Column>
